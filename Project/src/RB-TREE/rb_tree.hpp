@@ -1,0 +1,635 @@
+#ifndef RB_TREE_HPP
+#define RB_TREE_HPP
+
+#include <iostream>
+#include <utility>
+#include <stdexcept>
+#include "NodeRb.hpp"
+
+/**
+ * @brief Classe template para implementação de uma Árvore Rubro-Negra (Red-Black Tree).
+ * 
+ * @tparam Key Tipo da chave utilizada para indexação dos nós.
+ * @tparam Value Tipo do valor armazenado em cada nó.
+ * 
+ * Esta classe implementa uma árvore rubro-negra, uma estrutura de dados balanceada
+ * que garante operações de inserção, remoção e busca em tempo O(log n).
+ * 
+ * Principais funcionalidades:
+ * - Inserção e remoção de pares chave-valor mantendo as propriedades da árvore rubro-negra.
+ * - Busca eficiente por chave.
+ * - Impressão da árvore para depuração.
+ * - Métricas de desempenho: número de comparações, rotações e alterações de cor.
+ * 
+ * Métodos públicos:
+ * - insert: Insere um novo elemento na árvore.
+ * - remove: Remove um elemento da árvore pela chave.
+ * - clear: Remove todos os elementos da árvore.
+ * - search: Busca um valor associado a uma chave.
+ * - size: Retorna o número de nós na árvore.
+ * - print: Imprime a árvore (para depuração).
+ * - get_comparisons, get_rotations, get_colors: Retornam métricas de desempenho.
+ * 
+ * Observação: A classe gerencia automaticamente a memória dos nós.
+ */
+template <typename Key, typename Value>
+class RB {
+private:
+    using Nodeptr = RBNode<Key, Value>*;
+    Nodeptr root;
+    Nodeptr TNULL;
+
+    mutable long long comparisons = 0;
+    long long rotations = 0;
+    mutable long long colors = 0;
+    int nodeCount = 0;
+
+    void initializeTNULL();
+    void leftRotate(Nodeptr x);
+    void rightRotate(Nodeptr y);
+    void insertFix(Nodeptr k);
+    void transplant(Nodeptr u, Nodeptr v);
+    void deleteFix(Nodeptr x);
+    void destroy(Nodeptr node);
+    void _insert(const Key& key, const Value& value_to_add);
+    void _remove(Nodeptr node);
+    Nodeptr minimum(Nodeptr node);
+    Nodeptr findNode(const Key& key) const;
+
+public:
+    RB(){
+        initializeTNULL();
+        root = TNULL;
+    }
+
+    ~RB() {
+        destroy(root);
+        delete TNULL;
+    }
+
+    // Funções públicas
+    void insert(const Key& key, const Value& value_to_add);
+    void remove(const Key& key);
+    void clear();
+    Value search(const Key& key) const;
+    int size() const { return nodeCount; }
+    void print() const; // Função de impressão para depuração
+
+    // Getters para métricas
+    long long get_comparisons() const { return comparisons; }
+    long long get_rotations() const { return rotations; }
+    long long get_colors() const { return colors; }
+
+private:
+    void printTree(Nodeptr node, std::string prefix = "", bool isLeft = true) const;
+};
+
+// ---------- IMPLEMENTAÇÃO ----------
+
+/**
+ * @brief Inicializa o nó sentinela TNULL da Árvore Rubro-Negra.
+ *
+ * Esta função aloca e configura o nó TNULL, que atua como nó sentinela (folha) da Árvore Rubro-Negra.
+ * O nó TNULL recebe a cor PRETA e seus ponteiros left, right e parent são definidos como nullptr.
+ * Esse nó é utilizado para representar a ausência de um filho na árvore, simplificando as operações
+ * e garantindo que todas as folhas sejam pretas, conforme exigido pelas propriedades da Árvore Rubro-Negra.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::initializeTNULL() {
+    TNULL = new RBNode<Key, Value>();
+    TNULL->color = BLACK;
+    TNULL->left = nullptr;
+    TNULL->right = nullptr;
+    TNULL->parent = nullptr;
+}
+
+/**
+ * @brief Desaloca recursivamente todos os nós da subárvore a partir do nó fornecido.
+ *
+ * Esta função realiza uma travessia pós-ordem para deletar com segurança todos os nós da subárvore,
+ * garantindo que os filhos esquerdo e direito sejam deletados antes do próprio nó pai.
+ * É normalmente utilizada para liberar a memória ao destruir toda a árvore rubro-negra.
+ *
+ * @param node Ponteiro para a raiz da subárvore a ser destruída. Se node for TNULL, a função retorna imediatamente.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::destroy(Nodeptr node) {
+    if (node == TNULL) return;
+    destroy(node->left);
+    destroy(node->right);
+    delete node;
+}
+
+/**
+ * @brief Procura um nó na árvore rubro-negra baseado em uma chave fornecida.
+ *
+ * Esta função percorre a árvore rubro-negra a partir da raiz, comparando a chave fornecida
+ * com as chaves dos nós existentes. Se a chave for menor que a do nó atual, a busca segue para a subárvore à esquerda;
+ * se for maior, segue para a subárvore à direita. O número de comparações realizadas é contabilizado na variável 'comparisons'.
+ * 
+ * @param key A chave a ser buscada na árvore.
+ * @return Nodeptr Um ponteiro para o nó encontrado com a chave correspondente, ou TNULL caso a chave não exista na árvore.
+ */
+template <typename Key, typename Value>
+typename RB<Key, Value>::Nodeptr RB<Key, Value>::findNode(const Key& key) const {
+    Nodeptr current = root;
+    while (current != TNULL) {
+        if (key < current->data.first) {
+            comparisons++;
+            current = current->left;
+        } else if (key > current->data.first) {
+            comparisons += 2;
+            current = current->right;
+        } else {
+            comparisons += 2;
+            return current;
+        }
+    }
+    return TNULL;
+}
+
+/**
+ * @brief Realiza uma rotação para a esquerda em torno do nó x em uma árvore rubro-negra.
+ *
+ * Esta função ajusta os ponteiros dos nós envolvidos para realizar a rotação à esquerda,
+ * mantendo as propriedades da árvore rubro-negra. A rotação para a esquerda move o filho
+ * direito de x para a posição de x, e x torna-se o filho esquerdo desse nó.
+ *
+ * @tparam Key Tipo da chave armazenada nos nós da árvore.
+ * @tparam Value Tipo do valor associado à chave.
+ * @param x Ponteiro para o nó em torno do qual a rotação será realizada.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::leftRotate(Nodeptr x) {
+    rotations++;
+
+    Nodeptr y = x->right;
+    x->right = y->left;
+
+    if (y->left != TNULL) y->left->parent = x;
+
+    y->parent = x->parent;
+
+    if (y->parent == TNULL) root = y;
+    else if (x == x->parent->left) x->parent->left = y;
+    else x->parent->right = y;
+
+    y->left = x;
+    x->parent = y;
+}
+
+/**
+ * @brief Realiza uma rotação para a direita no nó fornecido da Árvore Rubro-Negra.
+ *
+ * Esta função rotaciona a subárvore enraizada no nó 'y' para a direita. O filho esquerdo de 'y'
+ * torna-se a nova raiz da subárvore, e 'y' passa a ser o filho direito de seu antigo filho esquerdo.
+ * A função também atualiza os ponteiros de pai e mantém as propriedades da Árvore Rubro-Negra.
+ *
+ * @tparam Key Tipo da chave armazenada nos nós da árvore.
+ * @tparam Value Tipo do valor associado à chave.
+ * @param y Ponteiro para o nó em torno do qual a rotação à direita será realizada.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::rightRotate(Nodeptr y) {
+    rotations++;
+
+    Nodeptr x = y->left;
+    y->left = x->right;
+
+    if (x->right != TNULL) x->right->parent = y;
+    
+    
+    x->parent = y->parent;
+    if (y->parent == TNULL) root = x;
+    else if (y == y->parent->right) y->parent->right = x;
+    else y->parent->left = x;
+    
+    x->right = y;
+    y->parent = x;
+}
+
+/**
+ * @brief Corrige as violações das propriedades da árvore rubro-negra após uma inserção.
+ *
+ * Esta função é chamada após a inserção de um novo nó na árvore rubro-negra para garantir
+ * que todas as propriedades da árvore sejam mantidas. O procedimento percorre a árvore de baixo
+ * para cima, realizando rotações e recolorindo nós conforme necessário para restaurar as propriedades
+ * rubro-negras. O algoritmo lida com diferentes casos dependendo da posição do nó inserido e das cores
+ * dos nós adjacentes.
+ *
+ * @tparam Key Tipo da chave armazenada nos nós da árvore.
+ * @tparam Value Tipo do valor associado à chave.
+ * @param k Ponteiro para o nó recém-inserido que pode ter causado violação das propriedades.
+ *
+ * @note A função utiliza as funções auxiliares `leftRotate` e `rightRotate` para realizar rotações,
+ * e manipula o contador `colors` para registrar o número de alterações de cor realizadas.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::insertFix(Nodeptr k) {
+    Nodeptr u;
+
+    while (k != root && k->parent->color == RED) {
+        if (k->parent == k->parent->parent->right) {
+            u = k->parent->parent->left;
+
+            if (u->color == RED) {
+                u->color = BLACK; colors++;
+                k->parent->color = BLACK; colors++;
+                k->parent->parent->color = RED; colors++;
+
+                k = k->parent->parent;
+            } else {
+                if (k == k->parent->left) {
+                    k = k->parent;
+                    rightRotate(k);
+                }
+
+                k->parent->color = BLACK; colors++;
+                k->parent->parent->color = RED; colors++;
+                leftRotate(k->parent->parent);
+            }
+        } else {
+            u = k->parent->parent->right;
+
+            if (u->color == RED) {
+                u->color = BLACK; colors++;
+                k->parent->color = BLACK; colors++;
+                k->parent->parent->color = RED; colors++;
+                k = k->parent->parent;
+            } else {
+                if (k == k->parent->right) {
+                    k = k->parent;
+                    leftRotate(k);
+                }
+            
+                k->parent->color = BLACK; colors++;
+                k->parent->parent->color = RED; colors++;
+                rightRotate(k->parent->parent);
+            }
+        }
+    }
+    if (root->color != BLACK) {
+        root->color = BLACK;
+        colors++;
+    }
+}
+
+/**
+ * @brief Substitui um subárvore por outra dentro da árvore rubro-negra.
+ *
+ * Esta função substitui o nó apontado por 'u' pelo nó apontado por 'v' na árvore.
+ * É utilizada principalmente em operações de remoção, onde um nó precisa ser removido
+ * e substituído por outro, mantendo a estrutura da árvore.
+ *
+ * @tparam Key Tipo da chave armazenada nos nós da árvore.
+ * @tparam Value Tipo do valor armazenado nos nós da árvore.
+ * @param u Ponteiro para o nó que será substituído.
+ * @param v Ponteiro para o nó que irá substituir 'u'.
+ *
+ * @note Após a chamada, o pai de 'u' passa a apontar para 'v' e o pai de 'v' é atualizado para ser o pai de 'u'.
+ *       Se 'u' for a raiz, 'v' se torna a nova raiz.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::transplant(Nodeptr u, Nodeptr v) {
+
+    if (u->parent == TNULL) {
+        root = v;
+    } else if (u == u->parent->left) {
+        u->parent->left = v;
+    } else {
+        u->parent->right = v;
+    }
+    v->parent = u->parent;
+}
+
+/**
+ * @brief Corrige as violações das propriedades da árvore rubro-negra após uma remoção.
+ *
+ * Esta função é chamada após a remoção de um nó preto da árvore rubro-negra, pois tal remoção pode violar
+ * as propriedades da árvore. O procedimento percorre a árvore de baixo para cima, realizando rotações e
+ * recolorindo nós conforme necessário para restaurar as propriedades rubro-negras. O algoritmo lida com
+ * diferentes casos dependendo da posição do nó e das cores dos nós irmãos e seus filhos.
+ *
+ * @tparam Key Tipo da chave armazenada nos nós da árvore.
+ * @tparam Value Tipo do valor associado à chave.
+ * @param x Ponteiro para o nó que pode ter causado violação das propriedades após a remoção.
+ *
+ * @note A função utiliza as funções auxiliares `leftRotate` e `rightRotate` para realizar rotações,
+ * e manipula o contador `colors` para registrar o número de alterações de cor realizadas.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::deleteFix(Nodeptr x) {
+    Nodeptr s;
+
+    while (x != root && x->color == BLACK) {
+        if (x == x->parent->left) {
+            s = x->parent->right;
+
+            if (s->color == RED) {
+                s->color = BLACK; colors++;
+                x->parent->color = RED; colors++;
+
+                leftRotate(x->parent);
+                
+                s = x->parent->right;
+            }
+            
+            if (s->left->color == BLACK && s->right->color == BLACK) {
+                s->color = RED; colors++;
+                x = x->parent;
+            } else {
+                if (s->right->color == BLACK) {
+                    s->left->color = BLACK; colors++;
+                    s->color = RED; colors++;
+                    rightRotate(s);
+                    s = x->parent->right;
+                }
+                
+                s->color = x->parent->color;
+                x->parent->color = BLACK; colors++;
+                s->right->color = BLACK; colors++;
+                leftRotate(x->parent);
+                x = root;
+            }
+        } else {
+            s = x->parent->left;
+            
+            if (s->color == RED) {
+                s->color = BLACK; colors++;
+                x->parent->color = RED; colors++;
+                rightRotate(x->parent);
+                s = x->parent->left;
+            }
+            
+            if (s->left->color == BLACK && s->right->color == BLACK) {
+                s->color = RED; colors++;
+                x = x->parent;
+            } else {
+                if (s->left->color == BLACK) {
+                    s->right->color = BLACK; colors++;
+                    s->color = RED; colors++;
+                    leftRotate(s);
+                    s = x->parent->left;
+                }
+                s->color = x->parent->color;
+                x->parent->color = BLACK; colors++;
+                s->left->color = BLACK; colors++;
+                rightRotate(x->parent);
+                x = root;
+            }
+        }
+    }
+    if (x->color != BLACK) {
+        x->color = BLACK;
+        colors++;
+    }
+}
+
+/**
+ * @brief Encontra o nó com a chave mínima na subárvore enraizada no nó fornecido.
+ *
+ * Esta função percorre os filhos à esquerda do nó fornecido até alcançar
+ * o nó mais à esquerda, que contém a menor chave da subárvore. A busca
+ * termina quando um nó cujo filho esquerdo é TNULL é encontrado.
+ *
+ * @param node Ponteiro para a raiz da subárvore na qual buscar o mínimo.
+ * @return Nodeptr Ponteiro para o nó com a chave mínima na subárvore.
+ */
+template <typename Key, typename Value>
+typename RB<Key, Value>::Nodeptr RB<Key, Value>::minimum(Nodeptr node) {
+
+    while (node->left != TNULL) {
+        node = node->left;
+    }
+    return node;
+}
+
+/**
+ * @brief Insere um novo nó na árvore rubro-negra com a chave e valor fornecidos.
+ *
+ * Este método realiza a inserção de um par chave-valor na árvore rubro-negra.
+ * Se a chave já existir, o valor associado é atualizado. Caso contrário, um novo nó é criado,
+ * inserido na posição correta e as propriedades da árvore rubro-negra são restauradas.
+ *
+ * @tparam Key Tipo da chave.
+ * @tparam Value Tipo do valor.
+ * @param key Chave a ser inserida ou atualizada.
+ * @param value_to_add Valor a ser associado à chave.
+ *
+ * @note O método atualiza os contadores de comparações, número de nós e cores conforme necessário.
+ * @note Após a inserção, pode chamar a função de ajuste (insertFix) para manter as propriedades da árvore rubro-negra.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::_insert(const Key& key, const Value& value_to_add) {
+    Nodeptr y = TNULL;
+    Nodeptr x = root;
+
+    while (x != TNULL) {
+        y = x;
+        if (key < x->data.first) {
+            comparisons++;
+            x = x->left;
+        } else if (key > x->data.first) {
+            comparisons += 2;
+            x = x->right;
+        } else {
+            comparisons += 2;
+            x->data.second = value_to_add;
+            return;
+        }
+    }
+
+    Nodeptr node = new RBNode<Key, Value>(std::make_pair(key, value_to_add));
+    node->parent = y;
+    node->left = TNULL;
+    node->right = TNULL;
+    node->color = RED;
+    
+    nodeCount++;
+
+    if (y == TNULL) {
+        root = node;
+    } else if (key < y->data.first) {
+        y->left = node;
+    } else {
+        y->right = node;
+    }
+
+    if (node->parent == TNULL) {
+        node->color = BLACK;
+        colors++;
+        return;
+    }
+
+    insertFix(node);
+}
+
+/**
+ * @brief Remove um nó da árvore rubro-negra.
+ *
+ * Esta função realiza a remoção de um nó especificado da árvore rubro-negra,
+ * mantendo as propriedades da árvore após a remoção. O nó a ser removido é passado
+ * como parâmetro. O procedimento lida com três casos principais:
+ *   1. O nó possui no máximo um filho não-nulo.
+ *   2. O nó possui dois filhos, sendo necessário encontrar o sucessor.
+ *   3. Ajusta as ligações e cores para manter as propriedades da árvore rubro-negra.
+ *
+ * Após a remoção, caso seja necessário, a função chama deleteFix para restaurar
+ * as propriedades da árvore rubro-negra.
+ *
+ * @param node_to_delete Ponteiro para o nó que deve ser removido da árvore.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::_remove(Nodeptr node_to_delete) {
+    Nodeptr z = node_to_delete;
+    Nodeptr x, y;
+
+    y = z;
+    Color y_original_color = y->color;
+    
+    if (z->left == TNULL) {
+        x = z->right;
+        transplant(z, z->right);
+    } else if (z->right == TNULL) {
+        x = z->left;
+        transplant(z, z->left);
+    } else {
+        y = minimum(z->right);
+        y_original_color = y->color;
+        x = y->right;
+        if (y->parent == z) {
+            if (x != TNULL) x->parent = y;
+        } else {
+            transplant(y, y->right);
+            y->right = z->right;
+            y->right->parent = y;
+        }
+        transplant(z, y);
+        y->left = z->left;
+        y->left->parent = y;
+        y->color = z->color;
+    }
+
+    delete z;
+    nodeCount--;
+
+    if (y_original_color == BLACK) {
+        deleteFix(x);
+    }
+}
+
+/**
+ * @brief Insere um novo par chave-valor na árvore rubro-negra.
+ *
+ * Esta função é a interface pública para inserção de elementos na árvore.
+ * Ela recebe uma chave e um valor a serem inseridos e delega a operação
+ * para a função privada _insert, que realiza a lógica interna de inserção
+ * mantendo as propriedades da árvore rubro-negra.
+ *
+ * @param key Chave a ser inserida na árvore.
+ * @param value_to_add Valor associado à chave a ser inserido.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::insert(const Key& key, const Value& value_to_add){
+    _insert(key, value_to_add);
+}
+
+/**
+ * @brief Remove um nó da árvore rubro-negra com a chave especificada.
+ *
+ * Esta função procura um nó na árvore cuja chave corresponde ao parâmetro fornecido.
+ * Se o nó for encontrado, a função privada _remove é chamada para realizar a remoção
+ * adequada do nó, mantendo as propriedades da árvore rubro-negra. Caso o nó não seja
+ * encontrado (ou seja, igual a TNULL), nenhuma ação é realizada.
+ *
+ * @param key Chave do nó a ser removido da árvore.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::remove(const Key& key) {
+    Nodeptr node = findNode(key);
+    if (node == TNULL) {
+        return;
+    }
+    _remove(node);
+}
+
+/**
+ * @brief Procura e retorna o valor associado a uma chave na árvore rubro-negra.
+ *
+ * Esta função busca um nó na árvore rubro-negra que contenha a chave especificada.
+ * Se a chave for encontrada, retorna o valor associado a ela.
+ * Caso contrário, lança uma exceção std::runtime_error indicando que a chave não foi encontrada.
+ *
+ * @param key A chave a ser buscada na árvore.
+ * @return O valor associado à chave fornecida.
+ * @throws std::runtime_error Se a chave não for encontrada na árvore.
+ */
+template <typename Key, typename Value>
+Value RB<Key, Value>::search(const Key& key) const {
+    Nodeptr node = findNode(key);
+    if (node == TNULL) {
+        throw std::runtime_error("Chave nao encontrada");
+    }
+    return node->data.second;
+}
+
+/**
+ * @brief Remove todos os nós da Árvore Rubro-Negra, esvaziando seu conteúdo.
+ *
+ * Esta função desaloca todos os nós da árvore chamando a função auxiliar destroy() a partir da raiz.
+ * Após a exclusão de todos os nós, o ponteiro root é redefinido para TNULL e os contadores de nós,
+ * comparações, rotações e alterações de cor são zerados.
+ * 
+ * Após a chamada desta função, a árvore estará vazia e todas as estatísticas associadas serão reiniciadas.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::clear() {
+    destroy(root);
+    root = TNULL;
+    nodeCount = 0;
+    comparisons = 0;
+    rotations = 0;
+    colors = 0;
+}
+
+/**
+ * @brief Imprime a estrutura da Árvore Rubro-Negra de forma visual e formatada.
+ *
+ * Esta função percorre recursivamente a árvore e imprime cada nó, mostrando sua chave, valor
+ * e cor (Vermelho ou Preto), utilizando caracteres ASCII para representar a estrutura da árvore.
+ * A saída é indentada para refletir a profundidade e a posição (filho à esquerda ou à direita) de cada nó.
+ *
+ * @tparam Key   Tipo da chave armazenada nos nós da árvore.
+ * @tparam Value Tipo do valor armazenado nos nós da árvore.
+ * @param node   Ponteiro para o nó atual a ser impresso.
+ * @param prefix String usada para formatar a indentação e os ramos da árvore.
+ * @param isLeft Booleano indicando se o nó atual é filho à esquerda.
+ *
+ * @note Esta função é destinada à depuração e visualização.
+ *       Não modifica a árvore.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::printTree(Nodeptr node, std::string prefix, bool isLeft) const {
+    if (node == TNULL) return;
+
+    std::cout << prefix << (isLeft ? "├──" : "└──") << node->data.first 
+              << ":" << node->data.second << " (" << (node->color == RED ? "R" : "B") << ")" << std::endl;
+              
+    printTree(node->left, prefix + (isLeft ? "│   " : "    "), true);
+    printTree(node->right, prefix + (isLeft ? "│   " : "    "), false);
+}
+
+/**
+ * @brief Imprime o conteúdo da Árvore Rubro-Negra.
+ *
+ * Esta função inicia a impressão de toda a Árvore Rubro-Negra,
+ * chamando a função auxiliar printTree a partir do nó raiz.
+ * O formato e o destino da saída dependem da implementação de printTree.
+ * Esta função não modifica a árvore.
+ */
+template <typename Key, typename Value>
+void RB<Key, Value>::print() const {
+    printTree(root);
+}
+
+#endif
