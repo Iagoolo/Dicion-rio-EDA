@@ -4,6 +4,7 @@
 #include <iostream>
 #include <utility>
 #include <stdexcept>
+#include "../Dictionaty/IDictionary.hpp"
 #include "NodeRb.hpp"
 
 /**
@@ -33,15 +34,15 @@
  * Observação: A classe gerencia automaticamente a memória dos nós.
  */
 template <typename Key, typename Value>
-class RB {
+class RB : public IDictionary<Key, Value> {
 private:
     using Nodeptr = RBNode<Key, Value>*;
+
     Nodeptr root;
     Nodeptr TNULL;
 
     mutable long long comparisons = 0;
     long long rotations = 0;
-    mutable long long colors = 0;
     int nodeCount = 0;
 
     void initializeTNULL();
@@ -67,18 +68,18 @@ public:
         delete TNULL;
     }
 
-    // Funções públicas
-    void insert(const Key& key, const Value& value_to_add);
-    void remove(const Key& key);
     void clear();
-    Value search(const Key& key) const;
-    int size() const { return nodeCount; }
     void print() const; // Função de impressão para depuração
+    void add(const Key& key, const Value& value_to_add) override;
+    void remove(const Key& key) override;
+    bool isEmpty() const override;
+    bool contains(const Key& key) const override;
+    size_t size() const override;
+    Value& get(const Key& key) const override;
 
     // Getters para métricas
-    long long get_comparisons() const { return comparisons; }
-    long long get_rotations() const { return rotations; }
-    long long get_colors() const { return colors; }
+    long long get_comparisons() const override;
+    long long get_specific_metrics() const override;
 
 private:
     void printTree(Nodeptr node, std::string prefix = "", bool isLeft = true) const;

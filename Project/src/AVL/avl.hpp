@@ -5,6 +5,7 @@
 #include <stack>
 #include <algorithm>
 #include "Node.hpp"
+#include "../Dictionaty/IDictionary.hpp"
 
 /**
  * @brief Classe que implementa uma Árvore AVL (Adelson-Velsky e Landis).
@@ -26,10 +27,12 @@
  * relacionadas ao desempenho das operações (como número de comparações e rotações).
  */
 template <typename Key, typename Value>
-class AVL {
+class AVL : public IDictionary<Key, Value> {
 private:
     using Nodeptr = Node<Key, Value>*;
+
     Nodeptr root;
+    
     mutable long long comparisons = 0; // Contador de comparações
     long long rotations = 0; // Contador de rotações
     int nodeCount = 0; // Contador de nós
@@ -50,23 +53,25 @@ private:
     std::string in_Order() const;
     std::string pre_Ordem() const;
     std::string pos_Ordem() const;
-
+    
 public:
     AVL() : root(nullptr) {}
     ~AVL() {
         destroy(root);
     }
-
+    
     void clear();
-    void insert(const Key& key, const Value& value_to_add);
-    void remove(const Key& key);
     void print() const;
-    Value search(const Key& key) const;
-    int size() const;
+    void add(const Key& key, const Value& value_to_add) override;
+    void remove(const Key& key) override;
+    bool isEmpty() const override;
+    bool contains(const Key& key) const override;
+    size_t size() const override;
+    Value& get(const Key& key) const override;
 
     // Funções para obter métricas
-    long long getComparisons() const { return comparisons; }
-    long long getRotations() const { return rotations; }
+    long long get_comparisons() const override;
+    long long get_specific_metrics() const override;
 };
 
 //------------- Implementação --------------
@@ -107,18 +112,21 @@ void AVL<Key, Value>::destroy(Nodeptr node){
  */
 template <typename Key, typename Value>
 typename AVL<Key, Value>::Nodeptr AVL<Key, Value>::findNode(Nodeptr node, const Key& key) const {
-    if (!node || node->data.first == key) {
-        return node; // Retorna o nó se encontrado ou nullptr se não encontrado
+    if (!node) {
+        return node; // Retorna o nullptr se não encontrado
     }
 
+    comparisons++; // Incrementa o contador de comparações
     if (key < node->data.first){
-        comparisons++; // Incrementa o contador de comparações
         return findNode(node->left, key);
     }
-    else {
-        comparisons+= 2; // Incrementa o contador de comparações
+    
+    comparisons++;
+    if (key > node->data.first){
         return findNode(node->right, key);
     }
+
+    return node; // Retorna o nó se a chave for encontrada
 }
 
 /**
@@ -376,7 +384,7 @@ void AVL<Key, Value>::clear(){
  * @param value_to_add Valor associado à chave a ser inserido.
  */
 template <typename Key, typename Value>
-void AVL<Key, Value>::insert(const Key& key, const Value& value_to_add) {
+void AVL<Key, Value>::add(const Key& key, const Value& value_to_add){
     root = _insert(root, key, value_to_add);
 }
 
@@ -517,13 +525,29 @@ void AVL<Key, Value>::printTree(Nodeptr node, std::string prefix, bool isLeft) c
  * @throws std::runtime_error Se a chave não for encontrada na árvore.
  */
 template <typename Key, typename Value>
-Value AVL<Key, Value>::search(const Key& key) const {
+Value& AVL<Key, Value>::get(const Key& key) const {
     Nodeptr node = findNode(root, key);
+
     if (node) {
         return node->data.second; // Retorna o valor associado à chave
     } else {
         throw std::runtime_error("Chave não encontrada");
     }
+}
+
+/**
+ * @brief Verifica se uma chave está presente na árvore AVL.
+ *
+ * Esta função procura pela chave especificada na árvore AVL e retorna true se a chave for encontrada,
+ * ou false caso contrário.
+ *
+ * @param key A chave a ser buscada na árvore.
+ * @return true se a chave estiver presente na árvore, false caso contrário.
+ */
+template <typename Key, typename Value>
+bool AVL<Key, Value>::contains(const Key& key) const {
+    Nodeptr node = findNode(root, key);
+    return node != nullptr; // Retorna true se o nó for encontrado, false caso contrário
 }
 
 /**
@@ -552,8 +576,47 @@ void AVL<Key, Value>::print() const {
  * @return int Número de nós na árvore.
  */
 template <typename Key, typename Value>
-int AVL<Key, Value>::size() const{
+size_t AVL<Key, Value>::size() const  {
     return nodeCount; // Retorna o número de nós na árvore
 }
 
+/**
+ * @brief Verifica se a árvore AVL está vazia.
+ *
+ * Este método retorna verdadeiro se a árvore não contém nenhum nó,
+ * ou seja, se o número de nós (nodeCount) é igual a zero.
+ *
+ * @return true se a árvore estiver vazia, false caso contrário.
+ */
+template <typename Key, typename Value>
+bool AVL<Key, Value>::isEmpty() const {
+    return nodeCount == 0;
+}
+
+/**
+ * @brief Retorna o número de comparações realizadas nas operações da árvore AVL.
+ *
+ * Este método fornece acesso ao contador interno de comparações, útil para análise de desempenho
+ * dos algoritmos de busca, inserção e remoção na árvore AVL.
+ *
+ * @return O número total de comparações realizadas como um valor do tipo long long.
+ */
+template <typename Key, typename Value>
+long long AVL<Key, Value>::get_comparisons() const {
+    return comparisons; // Retorna o número de comparações realizadas
+}
+
+/**
+ * @brief Retorna o número de rotações realizadas pela árvore AVL.
+ *
+ * Esta função fornece uma métrica específica da árvore AVL, indicando
+ * quantas rotações (simples ou duplas) foram executadas durante as operações
+ * de inserção ou remoção para manter o balanceamento da árvore.
+ *
+ * @return long long O número total de rotações realizadas.
+ */
+template <typename Key, typename Value>
+long long AVL<Key, Value>::get_specific_metrics() const {
+    return rotations; // Retorna o número de rotações realizadas
+}
 #endif

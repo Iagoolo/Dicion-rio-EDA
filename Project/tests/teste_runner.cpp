@@ -56,13 +56,13 @@ void test_all_structures() {
     std::cout << "==========================================" << std::endl;
 
     // Testes AVL
-    run_test([](){ AVL<int,int> avl; avl.insert(1,1); return avl.size() == 1; }, "AVL Insert");
-    run_test([](){ AVL<int,int> avl; avl.insert(1,1); return avl.search(1) == 1; }, "AVL Search");
-    run_test([](){ AVL<int,int> avl; avl.insert(1,1); avl.remove(1); return avl.size() == 0; }, "AVL Remove");
-    run_test([](){ AVL<int,int> avl; avl.insert(1,1); avl.insert(2,2); avl.insert(3,3); return avl.size() == 3; }, "AVL Multiple Inserts");
-    run_test([](){ AVL<std::string, std::string> avl; avl.insert("key1", "value1"); return avl.search("key1") == "value1"; }, "AVL String Insert"); 
-    run_test([](){ AVL<std::string, std::string> avl; avl.insert("key1", "value1"); avl.insert("key2", "value2"); avl.insert("key3", "value3"); return avl.size() == 3; }, "AVL String Multiple Inserts");
-    run_test([](){ AVL<std::string, std::string> avl; avl.insert("key1", "value1"); avl.insert("key2", "value2"); avl.remove("key1"); ASSERT_THROWS(avl.search("key1"), std::runtime_error); return avl.search("key2") == "value2"; }, "AVL String Remove");
+    run_test([](){ AVL<int,int> avl; avl.add(1,1); return avl.size() == 1; }, "AVL add");
+    run_test([](){ AVL<int,int> avl; avl.add(1,1); return avl.get(1) == 1; }, "AVL get");
+    run_test([](){ AVL<int,int> avl; avl.add(1,1); avl.remove(1); return avl.size() == 0; }, "AVL Remove");
+    run_test([](){ AVL<int,int> avl; avl.add(1,1); avl.add(2,2); avl.add(3,3); return avl.size() == 3; }, "AVL Multiple adds");
+    run_test([](){ AVL<std::string, std::string> avl; avl.add("key1", "value1"); return avl.get("key1") == "value1"; }, "AVL String add"); 
+    run_test([](){ AVL<std::string, std::string> avl; avl.add("key1", "value1"); avl.add("key2", "value2"); avl.add("key3", "value3"); return avl.size() == 3; }, "AVL String Multiple adds");
+    run_test([](){ AVL<std::string, std::string> avl; avl.add("key1", "value1"); avl.add("key2", "value2"); avl.remove("key1"); ASSERT_THROWS(avl.get("key1"), std::runtime_error); return avl.get("key2") == "value2"; }, "AVL String Remove");
 
     // Testes Rubro-Negra
     run_test([](){ RB<int,int> rb; rb.insert(1,1); return rb.size() == 1; }, "RB Insert");
@@ -108,20 +108,20 @@ BenchmarkResults benchmark_avl(const std::vector<std::string>& data) {
     BenchmarkResults results;
     AVL<std::string, int> avl;
     auto start_insert = std::chrono::high_resolution_clock::now();
-    for (const auto& val : data) { avl.insert(val, 1); }
+    for (const auto& val : data) { avl.add(val, 1); }
     auto end_insert = std::chrono::high_resolution_clock::now();
     
     results.insert_time_ms = std::chrono::duration<double, std::milli>(end_insert - start_insert).count();
-    results.insert_comparisons = avl.getComparisons();
-    results.structure_specific_metric = avl.getRotations();
-    long long comparisons_before_search = avl.getComparisons();
+    results.insert_comparisons = avl.get_comparisons();
+    results.structure_specific_metric = avl.get_specific_metrics();
+    long long comparisons_before_search = avl.get_comparisons();
     
     auto start_search = std::chrono::high_resolution_clock::now();
-    for (const auto& val : data) { avl.search(val); }
+    for (const auto& val : data) { avl.get(val); }
     auto end_search = std::chrono::high_resolution_clock::now();
     
     results.search_time_ms = std::chrono::duration<double, std::milli>(end_search - start_search).count();
-    results.search_comparisons = avl.getComparisons() - comparisons_before_search;
+    results.search_comparisons = avl.get_comparisons() - comparisons_before_search;
     
     return results;
 }
