@@ -65,13 +65,13 @@ void test_all_structures() {
     run_test([](){ AVL<std::string, std::string> avl; avl.add("key1", "value1"); avl.add("key2", "value2"); avl.remove("key1"); ASSERT_THROWS(avl.get("key1"), std::runtime_error); return avl.get("key2") == "value2"; }, "AVL String Remove");
 
     // Testes Rubro-Negra
-    run_test([](){ RB<int,int> rb; rb.insert(1,1); return rb.size() == 1; }, "RB Insert");
-    run_test([](){ RB<int,int> rb; rb.insert(1,1); return rb.search(1) == 1; }, "RB Search");
-    run_test([](){ RB<int,int> rb; rb.insert(1,1); rb.remove(1); return rb.size() == 0; }, "RB Remove");
-    run_test([](){ RB<int,int> rb; rb.insert(1,1); rb.insert(2,2); rb.insert(3,3); return rb.size() == 3; }, "RB Multiple Inserts");
-    run_test([](){ RB<std::string, std::string> rb; rb.insert("key1", "value1"); return rb.search("key1") == "value1"; }, "RB String Insert");
-    run_test([](){ RB<std::string, std::string> rb; rb.insert("key1", "value1"); rb.insert("key2", "value2"); rb.insert("key3", "value3"); return rb.size() == 3; }, "RB String Multiple Inserts");
-    run_test([](){ RB<std::string, std::string> rb; rb.insert("key1", "value1"); rb.insert("key2", "value2"); rb.remove("key1"); ASSERT_THROWS(rb.search("key1"), std::runtime_error); return rb.search("key2") == "value2"; }, "RB String Remove");
+    run_test([](){ RB<int,int> rb; rb.add(1,1); return rb.size() == 1; }, "RB add");
+    run_test([](){ RB<int,int> rb; rb.add(1,1); return rb.get(1) == 1; }, "RB get");
+    run_test([](){ RB<int,int> rb; rb.add(1,1); rb.remove(1); return rb.size() == 0; }, "RB Remove");
+    run_test([](){ RB<int,int> rb; rb.add(1,1); rb.add(2,2); rb.add(3,3); return rb.size() == 3; }, "RB Multiple adds");
+    run_test([](){ RB<std::string, std::string> rb; rb.add("key1", "value1"); return rb.get("key1") == "value1"; }, "RB String add");
+    run_test([](){ RB<std::string, std::string> rb; rb.add("key1", "value1"); rb.add("key2", "value2"); rb.add("key3", "value3"); return rb.size() == 3; }, "RB String Multiple adds");
+    run_test([](){ RB<std::string, std::string> rb; rb.add("key1", "value1"); rb.add("key2", "value2"); rb.remove("key1"); ASSERT_THROWS(rb.get("key1"), std::runtime_error); return rb.get("key2") == "value2"; }, "RB String Remove");
 
     // Testes Hash Encadeada
     run_test([](){ ChainedHashTable<int,int> ht; ht.add(1,1); return ht.size() == 1; }, "Chained Hash Insert");
@@ -113,7 +113,7 @@ BenchmarkResults benchmark_avl(const std::vector<std::string>& data) {
     
     results.insert_time_ms = std::chrono::duration<double, std::milli>(end_insert - start_insert).count();
     results.insert_comparisons = avl.get_comparisons();
-    results.structure_specific_metric = avl.get_specific_metrics();
+    results.structure_specific_metric = avl.get_rotations();
     long long comparisons_before_search = avl.get_comparisons();
     
     auto start_search = std::chrono::high_resolution_clock::now();
@@ -131,7 +131,7 @@ BenchmarkResults benchmark_rb(const std::vector<std::string>& data) {
     RB<std::string, int> rb;
     
     auto start_insert = std::chrono::high_resolution_clock::now();
-    for (const auto& val : data) { rb.insert(val, 1); }
+    for (const auto& val : data) { rb.add(val, 1); }
     auto end_insert = std::chrono::high_resolution_clock::now();
     
     results.insert_time_ms = std::chrono::duration<double, std::milli>(end_insert - start_insert).count();
@@ -140,7 +140,7 @@ BenchmarkResults benchmark_rb(const std::vector<std::string>& data) {
     long long comparisons_before_search = rb.get_comparisons();
     
     auto start_search = std::chrono::high_resolution_clock::now();
-    for (const auto& val : data) { rb.search(val); }
+    for (const auto& val : data) { rb.get(val); }
     auto end_search = std::chrono::high_resolution_clock::now();
     
     results.search_time_ms = std::chrono::duration<double, std::milli>(end_search - start_search).count();

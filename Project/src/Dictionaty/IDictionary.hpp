@@ -14,9 +14,12 @@ public:
     virtual bool contains(const Key& key) const = 0;
     virtual bool isEmpty() const = 0;
     virtual size_t size() const = 0;
-    virtual Value& get(const Key& key) const = 0;
+    virtual const Value& get(const Key& key) const = 0;
 
+    // Funções de métricas
     virtual long long get_comparisons() const = 0;
-    virtual long long get_specific_metrics() const = 0;
+    virtual long long get_rotations() const = 0;
+    virtual long long get_colors() const = 0;
+    virtual long long get_collisions() const = 0;
 };
 #endif

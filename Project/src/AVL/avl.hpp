@@ -67,11 +67,13 @@ public:
     bool isEmpty() const override;
     bool contains(const Key& key) const override;
     size_t size() const override;
-    Value& get(const Key& key) const override;
+    const Value& get(const Key& key) const override;
 
     // Funções para obter métricas
     long long get_comparisons() const override;
-    long long get_specific_metrics() const override;
+    long long get_rotations() const override;
+    long long get_colors() const override;
+    long long get_collisions() const override;
 };
 
 //------------- Implementação --------------
@@ -525,7 +527,7 @@ void AVL<Key, Value>::printTree(Nodeptr node, std::string prefix, bool isLeft) c
  * @throws std::runtime_error Se a chave não for encontrada na árvore.
  */
 template <typename Key, typename Value>
-Value& AVL<Key, Value>::get(const Key& key) const {
+const Value& AVL<Key, Value>::get(const Key& key) const {
     Nodeptr node = findNode(root, key);
 
     if (node) {
@@ -616,7 +618,18 @@ long long AVL<Key, Value>::get_comparisons() const {
  * @return long long O número total de rotações realizadas.
  */
 template <typename Key, typename Value>
-long long AVL<Key, Value>::get_specific_metrics() const {
+long long AVL<Key, Value>::get_rotations() const {
     return rotations; // Retorna o número de rotações realizadas
 }
+
+template <typename Key, typename Value>
+long long AVL<Key, Value>::get_colors() const {
+    return 0; // Retorna 0, pois AVL não utiliza cores como RB-Tree
+}
+
+template <typename Key, typename Value>
+long long AVL<Key, Value>::get_collisions() const {
+    return 0; // Retorna 0, pois AVL não utiliza colisões como RB-Tree
+}
+
 #endif

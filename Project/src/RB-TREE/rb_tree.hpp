@@ -42,7 +42,8 @@ private:
     Nodeptr TNULL;
 
     mutable long long comparisons = 0;
-    long long rotations = 0;
+    mutable long long rotations = 0;
+    mutable long long colors = 0;
     int nodeCount = 0;
 
     void initializeTNULL();
@@ -75,11 +76,13 @@ public:
     bool isEmpty() const override;
     bool contains(const Key& key) const override;
     size_t size() const override;
-    Value& get(const Key& key) const override;
+    const Value& get(const Key& key) const override;
 
     // Getters para métricas
     long long get_comparisons() const override;
-    long long get_specific_metrics() const override;
+    long long get_rotations() const override;
+    long long get_colors() const override;
+    long long get_collisions() const override;
 
 private:
     void printTree(Nodeptr node, std::string prefix = "", bool isLeft = true) const;
@@ -222,8 +225,7 @@ void RB<Key, Value>::rightRotate(Nodeptr y) {
  * @tparam Value Tipo do valor associado à chave.
  * @param k Ponteiro para o nó recém-inserido que pode ter causado violação das propriedades.
  *
- * @note A função utiliza as funções auxiliares `leftRotate` e `rightRotate` para realizar rotações,
- * e manipula o contador `colors` para registrar o número de alterações de cor realizadas.
+ * @note A função utiliza as funções auxiliares `leftRotate` e `rightRotate` para realizar rotações
  */
 template <typename Key, typename Value>
 void RB<Key, Value>::insertFix(Nodeptr k) {
@@ -531,7 +533,7 @@ void RB<Key, Value>::_remove(Nodeptr node_to_delete) {
  * @param value_to_add Valor associado à chave a ser inserido.
  */
 template <typename Key, typename Value>
-void RB<Key, Value>::insert(const Key& key, const Value& value_to_add){
+void RB<Key, Value>::add(const Key& key, const Value& value_to_add){
     _insert(key, value_to_add);
 }
 
@@ -554,24 +556,19 @@ void RB<Key, Value>::remove(const Key& key) {
     _remove(node);
 }
 
+
 /**
- * @brief Procura e retorna o valor associado a uma chave na árvore rubro-negra.
+ * @brief Verifica se uma chave está presente na árvore rubro-negra.
  *
- * Esta função busca um nó na árvore rubro-negra que contenha a chave especificada.
- * Se a chave for encontrada, retorna o valor associado a ela.
- * Caso contrário, lança uma exceção std::runtime_error indicando que a chave não foi encontrada.
+ * Esta função verifica se a chave fornecida existe na árvore rubro-negra.
+ * Retorna true se a chave estiver presente, caso contrário retorna false.
  *
  * @param key A chave a ser buscada na árvore.
- * @return O valor associado à chave fornecida.
- * @throws std::runtime_error Se a chave não for encontrada na árvore.
+ * @return true se a chave estiver presente, false caso contrário.
  */
 template <typename Key, typename Value>
-Value RB<Key, Value>::search(const Key& key) const {
-    Nodeptr node = findNode(key);
-    if (node == TNULL) {
-        throw std::runtime_error("Chave nao encontrada");
-    }
-    return node->data.second;
+bool RB<Key, Value>::contains(const Key& key) const {
+    return findNode(key);
 }
 
 /**
@@ -590,7 +587,6 @@ void RB<Key, Value>::clear() {
     nodeCount = 0;
     comparisons = 0;
     rotations = 0;
-    colors = 0;
 }
 
 /**
@@ -631,6 +627,94 @@ void RB<Key, Value>::printTree(Nodeptr node, std::string prefix, bool isLeft) co
 template <typename Key, typename Value>
 void RB<Key, Value>::print() const {
     printTree(root);
+}
+
+/**
+ * @brief Retorna uma referência ao valor associado a uma chave na árvore rubro-negra.
+ *
+ * Procura o nó correspondente à chave fornecida. Se a chave for encontrada,
+ * retorna uma referência ao valor associado. Caso contrário, lança uma exceção
+ * std::runtime_error indicando que a chave não foi encontrada na árvore.
+ *
+ * @param key A chave a ser buscada na árvore.
+ * @return Referência ao valor associado à chave.
+ * @throws std::runtime_error Se a chave não for encontrada na árvore.
+ */
+template <typename Key, typename Value>
+const Value& RB<Key, Value>::get(const Key& key) const {
+    Nodeptr node = findNode(key);
+    if (node == TNULL) {
+        throw std::runtime_error("Chave não encontrada na árvore.");
+    }
+    return node->data.second;
+}
+
+/**
+ * @brief Verifica se a árvore rubro-negra está vazia.
+ *
+ * Esta função retorna verdadeiro se a árvore não contém nenhum nó,
+ * ou seja, se o número de nós (nodeCount) é igual a zero.
+ *
+ * @return true se a árvore estiver vazia, false caso contrário.
+ */
+template <typename Key, typename Value>
+bool RB<Key, Value>::isEmpty() const {
+    return nodeCount == 0;
+}
+
+/**
+ * @brief Retorna a quantidade de nós presentes na árvore rubro-negra.
+ *
+ * @return O número de nós atualmente armazenados na árvore.
+ */
+template <typename Key, typename Value>
+size_t RB<Key, Value>::size() const {
+    return nodeCount;
+}
+
+/**
+ * @brief Retorna o número de comparações de chaves realizadas pela árvore rubro-negra.
+ *
+ * Esta função fornece acesso ao contador interno que registra quantas comparações de chaves
+ * foram realizadas durante as operações na árvore rubro-negra.
+ *
+ * @return O total de comparações de chaves como um inteiro longo (long long).
+ */
+template <typename Key, typename Value>
+long long RB<Key, Value>::get_comparisons() const {
+    return comparisons;
+}
+
+/**
+ * @brief Retorna o número de rotações realizadas pela árvore rubro-negra.
+ *
+ * Este método fornece a quantidade total de rotações (simples ou duplas) que foram
+ * executadas durante as operações de inserção ou remoção na árvore rubro-negra.
+ *
+ * @return Número de rotações realizadas.
+ */
+template <typename Key, typename Value>
+long long RB<Key, Value>::get_rotations() const {
+    return rotations;
+}
+
+/**
+ * @brief Retorna o número de cores utilizadas na árvore rubro-negra.
+ *
+ * Esta função retorna o valor da variável 'colors', que representa a quantidade de cores
+ * presentes ou utilizadas na estrutura da árvore rubro-negra. Normalmente, em árvores rubro-negras,
+ * as cores são usadas para balanceamento, sendo geralmente duas (vermelho e preto).
+ *
+ * @return long long O número de cores utilizadas na árvore.
+ */
+template <typename Key, typename Value>
+long long RB<Key, Value>::get_colors() const {
+    return colors;
+}
+
+template <typename Key, typename Value>
+long long RB<Key, Value>::get_collisions() const {
+    return 0; // Retorna 0, pois não há colisões em uma árvore rubro-negra
 }
 
 #endif
