@@ -75,21 +75,21 @@ void test_all_structures() {
 
     // Testes Hash Encadeada
     run_test([](){ ChainedHashTable<int,int> ht; ht.add(1,1); return ht.size() == 1; }, "Chained Hash Insert");
-    run_test([](){ ChainedHashTable<int,int> ht; ht.add(1,1); return ht.at(1) == 1; }, "Chained Hash Search");
+    run_test([](){ ChainedHashTable<int,int> ht; ht.add(1,1); return ht.get(1) == 1; }, "Chained Hash Search");
     run_test([](){ ChainedHashTable<int,int> ht; ht.add(1,1); ht.remove(1); return ht.size() == 0; }, "Chained Hash Remove");       
     run_test([](){ ChainedHashTable<int,int> ht; ht.add(1,1); ht.add(2,2); ht.add(3,3); return ht.size() == 3; }, "Chained Hash Multiple Inserts");
-    run_test([](){ ChainedHashTable<std::string, int> ht; ht.add("key1", 1); return ht.at("key1") == 1; }, "Chained Hash String Insert");
+    run_test([](){ ChainedHashTable<std::string, int> ht; ht.add("key1", 1); return ht.get("key1") == 1; }, "Chained Hash String Insert");
     run_test([](){ ChainedHashTable<std::string, int> ht; ht.add("key1", 1); ht.add("key2", 2); ht.add("key3", 3); return ht.size() == 3; }, "Chained Hash String Multiple Inserts");
-    run_test([](){ ChainedHashTable<std::string, int> ht; ht.add("key1", 1); ht.add("key2", 2); ht.remove("key1"); ASSERT_THROWS(ht.at("key1"), std::out_of_range); return ht.at("key2") == 2; }, "Chained Hash String Remove"); 
+    run_test([](){ ChainedHashTable<std::string, int> ht; ht.add("key1", 1); ht.add("key2", 2); ht.remove("key1"); ASSERT_THROWS(ht.get("key1"), std::out_of_range); return ht.get("key2") == 2; }, "Chained Hash String Remove"); 
     
     // Testes Hash Endereçamento Aberto
     run_test([](){ OpenAddressingHashTable<int,int> oht(10); oht.add(1,1); return oht.size() == 1; }, "Open Addressing Hash Insert");
-    run_test([](){ OpenAddressingHashTable<int,int> oht(10); oht.add(1,1); return oht.at(1) == 1; }, "Open Addressing Hash Search");
+    run_test([](){ OpenAddressingHashTable<int,int> oht(10); oht.add(1,1); return oht.get(1) == 1; }, "Open Addressing Hash Search");
     run_test([](){ OpenAddressingHashTable<int,int> oht(10); oht.add(1,1); oht.remove(1); return oht.size() == 0; }, "Open Addressing Hash Remove");
     run_test([](){ OpenAddressingHashTable<int,int> oht(10); oht.add(1,1); oht.add(2,2); oht.add(3,3); return oht.size() == 3; }, "Open Addressing Hash Multiple Inserts");
-    run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); return oht.at("key1") == 1; }, "Open Addressing Hash String Insert");
+    run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); return oht.get("key1") == 1; }, "Open Addressing Hash String Insert");
     run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); oht.add("key2", 2); oht.add("key3", 3); return oht.size() == 3; }, "Open Addressing Hash String Multiple Inserts");
-    run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); oht.add("key2", 2); oht.remove("key1"); ASSERT_THROWS(oht.at("key1"), std::out_of_range); return oht.at("key2") == 2; }, "Open Addressing Hash String Remove");
+    run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); oht.add("key2", 2); oht.remove("key1"); ASSERT_THROWS(oht.get("key1"), std::out_of_range); return oht.get("key2") == 2; }, "Open Addressing Hash String Remove");
 }
 
 
@@ -163,7 +163,7 @@ BenchmarkResults benchmark_chained_hash(const std::vector<std::string>& data) {
     long long comparisons_before_search = ht.get_comparisons();
     
     auto start_search = std::chrono::high_resolution_clock::now();
-    for (const auto& val : data) { ht.at(val); }
+    for (const auto& val : data) { ht.get(val); }
     auto end_search = std::chrono::high_resolution_clock::now();
     
     results.search_time_ms = std::chrono::duration<double, std::milli>(end_search - start_search).count();
@@ -186,7 +186,7 @@ BenchmarkResults benchmark_open_hash(const std::vector<std::string>& data) {
     
     long long comparisons_before_search = oht.get_comparisons();
     auto start_search = std::chrono::high_resolution_clock::now();
-    for (const auto& val : data) { oht.at(val); }
+    for (const auto& val : data) { oht.get(val); }
     auto end_search = std::chrono::high_resolution_clock::now();
     
     results.search_time_ms = std::chrono::duration<double, std::milli>(end_search - start_search).count();
