@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 #include "Node.hpp"
-#include "../Dictionaty/IDictionary.hpp"
+#include "../src/Dictionaty/IDictionary.hpp"
 
 /**
  * @brief Classe que implementa uma Árvore AVL (Adelson-Velsky e Landis).

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <utility>
 #include <stdexcept>
-#include "../Dictionaty/IDictionary.hpp"
+#include "../src/Dictionaty/IDictionary.hpp"
 #include "NodeRb.hpp"
 
 /**

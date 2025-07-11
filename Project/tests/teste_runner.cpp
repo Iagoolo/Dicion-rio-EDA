@@ -11,10 +11,10 @@
 #include <map>
 #include <iomanip>
 
-#include "../src/AVL/avl.hpp"
-#include "../src/RB-TREE/rb_tree.hpp"
-#include "../src/Chained_Hash/ChainedHashTable.hpp"
-#include "../src/Open_Hash/OpenAddressingHashTable.hpp"
+#include "../include/AVL/avl.hpp"
+#include "../include/RB-TREE/rb_tree.hpp"
+#include "../include/Chained_Hash/ChainedHashTable.hpp"
+#include "../include/Open_Hash/OpenAddressingHashTable.hpp"
 
 //==================================================================
 // ESTRUTURA DE TESTES DE CORREÇÃO

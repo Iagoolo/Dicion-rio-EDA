@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <functional>
 #include <iostream>
-#include "../Open_Hash/OpenAddressingHashTable.hpp"
+#include "../src/Dictionaty/IDictionary.hpp"
 
 /**
  * @brief Tabela hash com endereçamento aberto utilizando duplo hash.

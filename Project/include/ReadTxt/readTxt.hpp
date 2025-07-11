@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
-#include "Dictionaty/IDictionary.hpp" 
+#include "../src/Dictionaty/IDictionary.hpp" 
 
 class ReadTxt {
 private:

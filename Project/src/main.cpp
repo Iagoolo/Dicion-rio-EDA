@@ -1,22 +1,17 @@
-// src/main.cpp (Aplicação Final Revisada)
-
 #include <iostream>
 #include <string>
 #include <vector>
-#include <memory> // Para std::unique_ptr
+#include <memory>
 #include <chrono>
 #include <iomanip>
-#include <stdexcept> // Para std::out_of_range
-
-// Inclua a interface, o processador e todas as implementações de ED
+#include <stdexcept> 
 #include "Dictionaty/IDictionary.hpp"
-#include "ReadTxt/readTxt.hpp"
-#include "AVL/avl.hpp"
-#include "RB-TREE/rb_tree.hpp"
-#include "Chained_Hash/ChainedHashTable.hpp"
-#include "Open_Hash/OpenAddressingHashTable.hpp"
+#include "../include/ReadTxt/readTxt.hpp"
+#include "../include/AVL/avl.hpp"
+#include "../include/RB-TREE/rb_tree.hpp"
+#include "../include/Chained_Hash/ChainedHashTable.hpp"
+#include "../include/Open_Hash/OpenAddressingHashTable.hpp"
 
-// Função para imprimir os resultados de forma organizada
 void print_results(const std::string& structure_type, double time_ms, const IDictionary<std::string, int>& dict) {
     std::cout << "\n==================================================" << std::endl;
     std::cout << "      RESULTADOS PARA: " << structure_type << std::endl;
@@ -27,7 +22,6 @@ void print_results(const std::string& structure_type, double time_ms, const IDic
     std::cout << "---------------- Métricas --------------------" << std::endl;
     std::cout << "  - Comparações Totais: " << dict.get_comparisons() << std::endl;
     
-    // Imprime métricas específicas apenas se forem diferentes de zero
     if (dict.get_rotations() > 0) {
         std::cout << "  - Rotações: " << dict.get_rotations() << std::endl;
     }
@@ -43,7 +37,6 @@ void print_results(const std::string& structure_type, double time_ms, const IDic
 int main(int argc, char* argv[]) {
     std::cout << "Bem-vindo ao Dicionário EDA!" << std::endl;
 
-    // 1. Validação dos Argumentos de Linha de Comando
     if (argc != 3) {
         std::cerr << "Uso: " << argv[0] << " <tipo_estrutura> <caminho_arquivo>" << std::endl;
         std::cerr << "Tipos de estrutura disponiveis: avl, rb, chained_hash, open_hash" << std::endl;
@@ -55,7 +48,7 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Estrutura selecionada: " << structure_type << std::endl;
     std::cout << "Arquivo a ser processado: " << filename << std::endl;
-    // 2. Criação Polimórfica da Estrutura de Dados
+    
     std::unique_ptr<IDictionary<std::string, int>> dictionary;
 
     if (structure_type == "avl") {
@@ -72,7 +65,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // 3. Processamento e Medição de Desempenho
     ReadTxt processor;
     
     std::cout << "Processando o ficheiro '" << filename << "' com a estrutura '" << structure_type << "'..." << std::endl;
@@ -84,16 +76,12 @@ int main(int argc, char* argv[]) {
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = end - start;
 
-    // 4. Apresentação dos Resultados
     print_results(structure_type, elapsed.count(), *dictionary);
 
-    // 5. Impressão Opcional da Frequência (AGORA ATIVADO E MAIS SEGURO)
     if (dictionary) {
         std::cout << "\n--- Frequencia de todas as palavras (ordenado) ---" << std::endl;
         try {
-            // Assumindo que a sua interface e classes implementam get_all_keys_sorted()
             std::vector<std::string> keys = dictionary->get_all_keys_sorted();
-            // Imprime todas as chaves (palavras) separadas por vírgula
             std::cout << "Palavras únicas: ";
             for (size_t i = 0; i < keys.size(); ++i) {
                 std::cout << keys[i];
