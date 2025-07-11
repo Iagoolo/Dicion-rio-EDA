@@ -1,0 +1,3 @@
+Àquela época—século XIX—a programação pré-histórica era um quebra-cabeças. O 'código', se é que podemos chamá-lo assim, era... incompreensível!?! Que situação!
+
+A análise pós-processamento de 1000 linhas revelou um top-5 de "bugs" que eram um pão-de-cada-dia. A solução? Refatoração! O objetivo era transformar o "caos" em algo legível, talvez um suprassumo da engenharia. A busca pela eficiência exigia uma visão holística e uma dedicação sobre-humana. É o seu caso?

@@ -91,6 +91,7 @@ public:
     void remove(const Key &k) override;
     size_t size() const override;
     const Value &get(const Key &k) const override;
+    std::vector<Key> get_all_keys_sorted() const override;
 
     // Getters e funções de status
     long long get_comparisons() const override;// Retorna o número de comparações realizadas
@@ -98,6 +99,21 @@ public:
     long long get_colors() const override; // Função que retorna o número de troca de cores, essa ED não possui
     long long get_rotations() const override; // Função que retorna o número de rotações, essa ED não possui
 };
+
+template <typename Key, typename Value, typename Hash>
+std::vector<Key> OpenAddressingHashTable<Key, Value, Hash>::get_all_keys_sorted() const{
+    std::vector<Key> keys;
+    keys.reserve(this->size());
+    
+    for (const auto& slot : m_table) {
+        if (slot.status == SlotStatus::OCCUPIED) {
+            keys.push_back(slot.data.first);
+        }
+    }
+    
+    std::sort(keys.begin(), keys.end());
+    return keys;
+}
 
 // Função de hash para calcular o índice inicial
 // A função de hash é aplicada à chave e o resultado é reduzido pelo tamanho da tabela

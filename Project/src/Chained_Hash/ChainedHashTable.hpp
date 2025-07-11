@@ -62,7 +62,23 @@ public:
     long long get_colors() const override;
     long long get_rotations() const override;
     void reserve(size_t n) const;
+    std::vector<Key> get_all_keys_sorted() const override;
 };
+
+template <typename Key, typename Value, typename Hash>
+std::vector<Key> ChainedHashTable<Key, Value, Hash>::get_all_keys_sorted() const{
+    std::vector<Key> keys;
+    keys.reserve(this->size());
+        
+    for (const auto& bucket : m_table) {
+        for (const auto& pair : bucket) {
+            keys.push_back(pair.first);
+        }
+    }
+        
+    std::sort(keys.begin(), keys.end());
+    return keys;
+}
 
 /**
  * @brief Retorna o menor numero primo que eh maior que ou igual

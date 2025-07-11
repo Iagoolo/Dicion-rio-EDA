@@ -57,11 +57,16 @@ private:
     void _remove(Nodeptr node);
     Nodeptr minimum(Nodeptr node);
     Nodeptr findNode(const Key& key) const;
+    void _in_order_to_vector(Nodeptr node, std::vector<std::pair<Key, Value>>& vec) const;
 
 public:
-    RB(){
+    RB() {
         initializeTNULL();
         root = TNULL;
+        nodeCount = 0;
+        comparisons = 0;
+        rotations = 0;
+        colors = 0;
     }
 
     ~RB() {
@@ -77,6 +82,7 @@ public:
     bool contains(const Key& key) const override;
     size_t size() const override;
     const Value& get(const Key& key) const override;
+    std::vector<Key> get_all_keys_sorted() const override;
 
     // Getters para métricas
     long long get_comparisons() const override;
@@ -89,6 +95,41 @@ private:
 };
 
 // ---------- IMPLEMENTAÇÃO ----------
+
+template <typename Key, typename Value>
+void RB<Key, Value>::_in_order_to_vector(Nodeptr node, std::vector<std::pair<Key, Value>>& vec) const {
+    // CORREÇÃO CRÍTICA: O caso base deve verificar contra TNULL.
+    if (node == TNULL) {
+        return;
+    }
+    _in_order_to_vector(node->left, vec);
+    vec.push_back(node->data);
+    _in_order_to_vector(node->right, vec);
+}
+
+template <typename Key, typename Value>
+std::vector<Key> RB<Key, Value>::get_all_keys_sorted() const {
+    std::vector<std::pair<Key, Value>> pairs_vector;
+
+    if (this->isEmpty()) return {};
+
+    pairs_vector.reserve(this->size());
+
+    _in_order_to_vector(root, pairs_vector);
+
+    std::sort(pairs_vector.begin(), pairs_vector.end(), [](const auto& a, const auto& b) {
+        return a.second > b.second;
+    });
+
+    std::vector<Key> sorted_keys;
+    sorted_keys.reserve(this->size());
+
+    for (const auto& pair : pairs_vector) {
+        sorted_keys.push_back(pair.first);
+    }
+
+    return sorted_keys;
+}
 
 /**
  * @brief Inicializa o nó sentinela TNULL da Árvore Rubro-Negra.
@@ -568,7 +609,7 @@ void RB<Key, Value>::remove(const Key& key) {
  */
 template <typename Key, typename Value>
 bool RB<Key, Value>::contains(const Key& key) const {
-    return findNode(key);
+    return findNode(key) != TNULL;
 }
 
 /**
@@ -587,6 +628,7 @@ void RB<Key, Value>::clear() {
     nodeCount = 0;
     comparisons = 0;
     rotations = 0;
+    colors = 0;
 }
 
 /**

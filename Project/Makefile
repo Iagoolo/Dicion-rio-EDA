@@ -1,9 +1,9 @@
-# Makefile Final com Dependências Corretas
+# Makefile Final (Versão Robusta e Corrigida)
 
 # Compilador
 CXX = g++
-# Flags de compilação e diretórios de include
-CXXFLAGS = -Wall -Wextra -std=c++17 -I./src -I./src/AVL -I./src/RB-TREE -I./src/Chained_Hash -I./src/Open_Hash
+# Flags de compilação e diretórios de include (simplificado)
+CXXFLAGS = -Wall -Wextra -std=c++17 -I./src
 
 # --- VARIÁVEIS DE DIRETÓRIO ---
 SRC_DIR = src
@@ -19,45 +19,44 @@ TEST_TARGET = teste_runner
 TEST_SRC = $(TEST_DIR)/teste_runner.cpp
 TEST_BIN = $(BUILD_DIR)/$(TEST_TARGET)
 
-# --- CORREÇÃO: Lista automática de todos os ficheiros de cabeçalho ---
-HEADERS = $(wildcard src/AVL/*.hpp) \
-          $(wildcard src/RB-TREE/*.hpp) \
-          $(wildcard src/Chained_Hash/*.hpp) \
-          $(wildcard src/Open_Hash/*.hpp)
+# --- Dependências Automáticas de Cabeçalhos (mais robusto) ---
+# Encontra todos os ficheiros .hpp dentro de src e seus subdiretórios
+HEADERS = $(shell find $(SRC_DIR) -name '*.hpp')
 
 
 # --- REGRAS ---
 
-# Cria o diretório build se ele não existir
-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
-
 # Regra padrão: compila o programa principal
-all: $(BUILD_DIR) $(MAIN_BIN)
+all: $(MAIN_BIN)
 
 # Compila o programa principal (main.cpp)
-# CORRIGIDO: Agora depende dos cabeçalhos
+# CORRIGIDO: A criação do diretório agora faz parte da receita.
 $(MAIN_BIN): $(MAIN_SRC) $(HEADERS)
-	@echo "Compilando o programa principal (dependências atualizadas)..."
-	@$(CXX) $(CXXFLAGS) -o $@ $(MAIN_SRC)
+	@echo "Verificando/Criando diretório de build..."
+	@mkdir -p $(@D)
+	@echo "Compilando o programa principal..."
+	$(CXX) $(CXXFLAGS) -o $@ $(MAIN_SRC)
 
-# Roda o programa principal
+# Roda o programa principal (Nota: precisa de argumentos!)
 run: all
 	@echo "Executando o programa principal..."
+	@echo "Lembre-se de fornecer os argumentos. Exemplo: ./build/main avl corpus/texto.txt"
 	@./$(MAIN_BIN)
 
 # --- REGRAS DE TESTE ---
 
 # Alvo principal para testes: compila e roda o test_runner
-test: $(BUILD_DIR) $(TEST_BIN)
+test: $(TEST_BIN)
 	@echo "Executando os testes..."
 	@./$(TEST_BIN)
 
 # Compila o programa de testes (test_runner.cpp)
-# CORRIGIDO: Agora depende dos cabeçalhos
+# CORRIGIDO: A criação do diretório agora faz parte da receita.
 $(TEST_BIN): $(TEST_SRC) $(HEADERS)
-	@echo "Compilando o runner de testes (dependências atualizadas)..."
-	@$(CXX) $(CXXFLAGS) -o $@ $(TEST_SRC)
+	@echo "Verificando/Criando diretório de build..."
+	@mkdir -p $(@D)
+	@echo "Compilando o runner de testes..."
+	$(CXX) $(CXXFLAGS) -o $@ $(TEST_SRC)
 
 # --- REGRAS DE LIMPEZA ---
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stack>
 #include <algorithm>
+#include <vector>
 #include "Node.hpp"
 #include "../Dictionaty/IDictionary.hpp"
 
@@ -33,9 +34,9 @@ private:
 
     Nodeptr root;
     
+    int nodeCount = 0; // Contador de nós
     mutable long long comparisons = 0; // Contador de comparações
     long long rotations = 0; // Contador de rotações
-    int nodeCount = 0; // Contador de nós
 
     // Funções auxiliares
     Nodeptr minValueNode(Nodeptr node);
@@ -53,9 +54,12 @@ private:
     std::string in_Order() const;
     std::string pre_Ordem() const;
     std::string pos_Ordem() const;
+
+    // Função auxiliar para ordenação
+    void in_Order_vec(Nodeptr node, std::vector<std::pair<Key, Value>>& keys) const;
     
 public:
-    AVL() : root(nullptr) {}
+    AVL() : root(nullptr), nodeCount(0), comparisons(0), rotations(0) {}
     ~AVL() {
         destroy(root);
     }
@@ -69,6 +73,8 @@ public:
     size_t size() const override;
     const Value& get(const Key& key) const override;
 
+    std::vector<Key> get_all_keys_sorted() const override;
+
     // Funções para obter métricas
     long long get_comparisons() const override;
     long long get_rotations() const override;
@@ -77,6 +83,36 @@ public:
 };
 
 //------------- Implementação --------------
+
+template <typename Key, typename Value>
+void AVL<Key, Value>::in_Order_vec(Nodeptr node, std::vector<std::pair<Key, Value>>& vec) const{
+    if (!node) return;
+    
+    in_Order_vec(node->left, vec);
+    vec.push_back(node->data);
+    in_Order_vec(node->right, vec);
+}
+
+template <typename Key, typename Value>
+std::vector<Key> AVL<Key, Value>::get_all_keys_sorted() const {
+    std::vector<std::pair<Key, Value>> pairs_vector;
+    if (this->isEmpty()) {
+        return {}; 
+    }
+    pairs_vector.reserve(this->size());
+    in_Order_vec(root, pairs_vector);
+
+    std::sort(pairs_vector.begin(), pairs_vector.end(), [](const auto& a, const auto& b) {
+        return a.second > b.second;
+    });
+
+    std::vector<Key> sorted_keys;
+    sorted_keys.reserve(this->size());
+    for (const auto& pair : pairs_vector) {
+        sorted_keys.push_back(pair.first);
+    }
+    return sorted_keys;
+}
 
 /**
  * @brief Libera recursivamente toda a memória alocada pelos nós da árvore AVL a partir do nó fornecido.
