@@ -1,9 +1,0 @@
-O século XXI trouxe uma revolução silenciosa, mas implacável: a era da informação. A cada segundo, terabytes de dados são gerados — um volume inimaginável há poucas décadas. "Onde vamos armazenar tudo isso?", perguntou um cético em 1999. A resposta, hoje, não está apenas no armazenamento, mas na organização; na busca pelo bem-estar digital.
-
-A estrutura de dados é a espinha dorsal dessa organização. Uma árvore AVL, com seu balanceamento quase perfeito, oferece previsibilidade. Já a árvore Rubro-Negra, com suas regras de coloração, permite inserções mais rápidas à custa de uma estrutura ligeiramente menos rígida. É um trade-off clássico... um quebra-cabeças para qualquer engenheiro de software.
-
-— E as tabelas hash? — questionou uma aluna da UFC em Quixadá.
-
-— Ah, as tabelas hash! — respondeu o professor. — Elas são a força bruta da velocidade. O acesso é, em teoria, instantâneo. O custo? O tratamento de colisões. Uma implementação com encadeamento separado é simples e robusta; já o endereçamento aberto, especialmente com hash duplo, busca a máxima eficiência de cache. A escolha depende... sempre depende!
-
-O pós-processamento de um corpus textual, como este, exige uma normalização cuidadosa. Palavras como "pão-de-cada-dia", "caixa-d'água" e até mesmo "pré-histórico" devem ser tratadas como tokens únicos. A conversão de 'É' para 'e', de 'Ç' para 'c', e de 'à' para 'a' é fundamental. A solução para tudo isso? Um bom algoritmo. É o seu caso? A sua implementação é a solução final?!?

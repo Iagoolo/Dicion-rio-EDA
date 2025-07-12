@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include "../src/Dictionaty/IDictionary.hpp"
+#include "../utils/lexicalStr.hpp"
 
 /**
  * @brief Tabela hash com endereçamento aberto utilizando duplo hash.
@@ -101,17 +102,33 @@ public:
 };
 
 template <typename Key, typename Value, typename Hash>
-std::vector<Key> OpenAddressingHashTable<Key, Value, Hash>::get_all_keys_sorted() const{
+std::vector<Key> OpenAddressingHashTable<Key, Value, Hash>::get_all_keys_sorted() const {
     std::vector<Key> keys;
+    if (this->isEmpty()) return keys;
+
     keys.reserve(this->size());
-    
+
     for (const auto& slot : m_table) {
         if (slot.status == SlotStatus::OCCUPIED) {
             keys.push_back(slot.data.first);
         }
     }
-    
-    std::sort(keys.begin(), keys.end());
+
+    try {
+        std::locale loc("pt_BR.UTF-8");
+        const auto& collate = std::use_facet<std::collate<char>>(loc);
+
+        std::sort(keys.begin(), keys.end(), [&collate](const lexicalStr& a, const lexicalStr& b) {
+            return collate.compare(
+                a.get().data(), a.get().data() + a.get().size(),
+                b.get().data(), b.get().data() + b.get().size()
+            ) < 0;  
+        });
+    } catch (const std::runtime_error& e) {
+        std::cerr << "\nAVISO: Locale 'pt_BR.UTF-8' não encontrado. Ordenação padrão será usada.\n";
+        std::sort(keys.begin(), keys.end());
+    }   
+
     return keys;
 }
 

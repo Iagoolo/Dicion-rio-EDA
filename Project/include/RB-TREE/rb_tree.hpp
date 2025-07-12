@@ -57,7 +57,7 @@ private:
     void _remove(Nodeptr node);
     Nodeptr minimum(Nodeptr node);
     Nodeptr findNode(const Key& key) const;
-    void _in_order_to_vector(Nodeptr node, std::vector<std::pair<Key, Value>>& vec) const;
+    void in_Order_vec(Nodeptr node, std::vector<Key>& vec) const;
 
 public:
     RB() {
@@ -96,39 +96,44 @@ private:
 
 // ---------- IMPLEMENTAÇÃO ----------
 
+/**
+ * @brief Realiza um percurso em ordem (in-order) na árvore rubro-negra e armazena as chaves em um vetor.
+ *
+ * Esta função percorre recursivamente a árvore rubro-negra a partir do nó fornecido, visitando os nós em ordem crescente de chave.
+ * Para cada nó visitado, a chave (primeiro elemento do par armazenado no nó) é adicionada ao vetor passado por referência.
+ *
+ * @param node Ponteiro para o nó atual da árvore a ser visitado.
+ * @param keys_vec Referência para o vetor onde as chaves serão armazenadas em ordem.
+ */
 template <typename Key, typename Value>
-void RB<Key, Value>::_in_order_to_vector(Nodeptr node, std::vector<std::pair<Key, Value>>& vec) const {
-    // CORREÇÃO CRÍTICA: O caso base deve verificar contra TNULL.
-    if (node == TNULL) {
-        return;
-    }
-    _in_order_to_vector(node->left, vec);
-    vec.push_back(node->data);
-    _in_order_to_vector(node->right, vec);
+void RB<Key, Value>::in_Order_vec(Nodeptr node, std::vector<Key>& keys_vec) const{
+    if (node == TNULL) return;
+    
+    in_Order_vec(node->left, keys_vec);
+    keys_vec.push_back(node->data.first);
+    in_Order_vec(node->right, keys_vec);
 }
 
+/**
+ * @brief Retorna um vetor contendo todas as chaves da árvore rubro-negra em ordem crescente.
+ *
+ * Este método percorre a árvore rubro-negra em ordem (in-order) e armazena todas as chaves
+ * em um vetor, garantindo que o resultado esteja ordenado de acordo com o operador de comparação
+ * das chaves. Caso a árvore esteja vazia, retorna um vetor vazio.
+ *
+ * @return std::vector<Key> Vetor com todas as chaves da árvore em ordem crescente.
+ */
 template <typename Key, typename Value>
 std::vector<Key> RB<Key, Value>::get_all_keys_sorted() const {
-    std::vector<std::pair<Key, Value>> pairs_vector;
-
-    if (this->isEmpty()) return {};
-
-    pairs_vector.reserve(this->size());
-
-    _in_order_to_vector(root, pairs_vector);
-
-    std::sort(pairs_vector.begin(), pairs_vector.end(), [](const auto& a, const auto& b) {
-        return a.second > b.second;
-    });
-
-    std::vector<Key> sorted_keys;
-    sorted_keys.reserve(this->size());
-
-    for (const auto& pair : pairs_vector) {
-        sorted_keys.push_back(pair.first);
+    std::vector<Key> keys_vec;
+    if (this->isEmpty()) {
+        return {}; 
     }
+    
+    keys_vec.reserve(this->size());
+    in_Order_vec(root, keys_vec);
 
-    return sorted_keys;
+    return keys_vec;
 }
 
 /**

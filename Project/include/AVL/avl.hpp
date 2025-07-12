@@ -56,7 +56,7 @@ private:
     std::string pos_Ordem() const;
 
     // Função auxiliar para ordenação
-    void in_Order_vec(Nodeptr node, std::vector<std::pair<Key, Value>>& keys) const;
+    void in_Order_vec(Nodeptr node, std::vector<Key>& keys) const;
     
 public:
     AVL() : root(nullptr), nodeCount(0), comparisons(0), rotations(0) {}
@@ -85,33 +85,25 @@ public:
 //------------- Implementação --------------
 
 template <typename Key, typename Value>
-void AVL<Key, Value>::in_Order_vec(Nodeptr node, std::vector<std::pair<Key, Value>>& vec) const{
+void AVL<Key, Value>::in_Order_vec(Nodeptr node, std::vector<Key>& keys_vec) const{
     if (!node) return;
     
-    in_Order_vec(node->left, vec);
-    vec.push_back(node->data);
-    in_Order_vec(node->right, vec);
+    in_Order_vec(node->left, keys_vec);
+    keys_vec.push_back(node->data.first);
+    in_Order_vec(node->right, keys_vec);
 }
 
 template <typename Key, typename Value>
 std::vector<Key> AVL<Key, Value>::get_all_keys_sorted() const {
-    std::vector<std::pair<Key, Value>> pairs_vector;
+    std::vector<Key> keys_vec;
     if (this->isEmpty()) {
         return {}; 
     }
-    pairs_vector.reserve(this->size());
-    in_Order_vec(root, pairs_vector);
+    
+    keys_vec.reserve(this->size());
+    in_Order_vec(root, keys_vec);
 
-    std::sort(pairs_vector.begin(), pairs_vector.end(), [](const auto& a, const auto& b) {
-        return a.second > b.second;
-    });
-
-    std::vector<Key> sorted_keys;
-    sorted_keys.reserve(this->size());
-    for (const auto& pair : pairs_vector) {
-        sorted_keys.push_back(pair.first);
-    }
-    return sorted_keys;
+    return keys_vec;
 }
 
 /**
