@@ -5,19 +5,20 @@
 #include <chrono>
 #include <iomanip>
 #include <stdexcept>
-#include "Dictionaty/IDictionary.hpp"
+#include <fstream> 
+#include "../include/Dictionaty/IDictionary.hpp"
 #include "../include/ReadTxt/readTxt.hpp"
-#include "../utils/lexicalStr.hpp"
+#include "../include/utils/lexicalStr.hpp"
 #include "../include/AVL/avl.hpp"
 #include "../include/RB-TREE/rb_tree.hpp"
 #include "../include/Chained_Hash/ChainedHashTable.hpp"
 #include "../include/Open_Hash/OpenAddressingHashTable.hpp"
+#include "../include/utils/outputWriter.hpp"
 
 template <typename KeyType>
 void run_and_print_results(const std::string& structure_type, const std::string& filename) {
     std::unique_ptr<IDictionary<KeyType, size_t>> dictionary;
 
-    // Cria a instância correta
     if (structure_type == "avl") {
         dictionary = std::make_unique<AVL<KeyType, size_t>>();
     } else if (structure_type == "rb") {
@@ -26,17 +27,22 @@ void run_and_print_results(const std::string& structure_type, const std::string&
         dictionary = std::make_unique<ChainedHashTable<KeyType, size_t>>();
     } else if (structure_type == "open_hash") {
         dictionary = std::make_unique<OpenAddressingHashTable<KeyType, size_t>>();
+    } else {
+        std::cerr << "Tipo de estrutura desconhecido: " << structure_type << std::endl;
+        return;
     }
 
-    // Processa o ficheiro
+    auto start = std::chrono::high_resolution_clock::now();
+
     ReadTxt<KeyType> processor;
     processor.processFile(filename, *dictionary);
 
-    std::cout << "\n--- Frequencia de todas as palavras (ordenado) ---" << std::endl;
-    std::vector<KeyType> keys = dictionary->get_all_keys_sorted();
-    for(const auto& key : keys) {
-        std::cout << key << ": " << dictionary->get(key) << std::endl;
-    }
+    auto end = std::chrono::high_resolution_clock::now();
+    double duration_seconds = std::chrono::duration<double>(end - start).count();
+
+    std::string output_filename = "output/saida_" + structure_type + ".txt";
+
+    save_results_to_file(*dictionary, output_filename, duration_seconds);
 }
 
 int main(int argc, char* argv[]) {

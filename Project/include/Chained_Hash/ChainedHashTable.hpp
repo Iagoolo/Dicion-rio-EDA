@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <locale>
 
-#include "../src/Dictionaty/IDictionary.hpp"
+#include "../Dictionaty/IDictionary.hpp"
 
 template <typename Key, typename Value, typename Hash = std::hash<Key>>
 class ChainedHashTable : public IDictionary<Key, Value>{

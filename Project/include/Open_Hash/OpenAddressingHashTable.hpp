@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <functional>
 #include <iostream>
-#include "../src/Dictionaty/IDictionary.hpp"
+#include "../Dictionaty/IDictionary.hpp"
 #include "../utils/lexicalStr.hpp"
 
 /**

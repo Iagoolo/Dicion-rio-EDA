@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
-#include "Dictionaty/IDictionary.hpp" 
+#include "../Dictionaty/IDictionary.hpp"
 #include "../utils/lexicalStr.hpp"
 
 /**
@@ -18,14 +18,16 @@
  * as letras maiúsculas (incluindo as acentuadas) para minúsculas.
  */
 template <typename KeyType>
-class ReadTxt {
+class ReadTxt
+{
 private:
     std::unordered_map<unsigned char, unsigned char> accent_map;
 
     /**
      * @brief Inicializa o mapa de conversão de acentos no construtor.
      */
-    void initialize_accent_map() {
+    void initialize_accent_map()
+    {
         // Mapeia o segundo byte de um caractere UTF-8 MAIÚSCULO para o seu MINÚSCULO equivalente.
         accent_map[0x80] = 0xa0; // À -> à
         accent_map[0x81] = 0xa1; // Á -> á
@@ -48,25 +50,30 @@ private:
     /**
      * @brief Limpa uma palavra, preservando acentos, mas convertendo para minúsculas.
      */
-    std::string clean_word(const std::string& raw_word) {
+    std::string clean_word(const std::string &raw_word)
+    {
         std::string final_word;
         final_word.reserve(raw_word.length());
 
-        for (size_t i = 0; i < raw_word.length(); ++i) {
+        for (size_t i = 0; i < raw_word.length(); ++i)
+        {
             unsigned char c1 = raw_word[i];
 
             // Verifica se é um caractere UTF-8 de 2 bytes (acentos em português começam com 0xc3)
-            if (c1 == 0xc3 && i + 1 < raw_word.length()) {
-                unsigned char c2 = raw_word[i+1];
+            if (c1 == 0xc3 && i + 1 < raw_word.length())
+            {
+                unsigned char c2 = raw_word[i + 1];
                 auto it = accent_map.find(c2);
 
                 // Se for um caractere acentuado MAIÚSCULO que conhecemos, converte para minúsculo
-                if (it != accent_map.end()) {
+                if (it != accent_map.end())
+                {
                     final_word += (char)c1;
                     final_word += (char)it->second; // Adiciona a versão minúscula
-                } 
+                }
                 // Caso contrário, assume que é um caractere acentuado minúsculo válido e o mantém
-                else {
+                else
+                {
                     final_word += (char)c1;
                     final_word += (char)c2;
                 }
@@ -75,9 +82,12 @@ private:
             }
 
             // Para caracteres ASCII normais (sem acento)
-            if (std::isalpha(c1)) {
+            if (std::isalpha(c1))
+            {
                 final_word += std::tolower(c1);
-            } else if (std::isdigit(c1) || (c1 == '-' && i > 0 && i < raw_word.length() - 1)) {
+            }
+            else if (std::isdigit(c1) || (c1 == '-' && i > 0 && i < raw_word.length() - 1))
+            {
                 final_word += c1; // Mantém números e hífens no meio da palavra
             }
         }
@@ -85,51 +95,107 @@ private:
     }
 
 public:
-    ReadTxt() {
+    ReadTxt()
+    {
         initialize_accent_map();
     }
 
     /**
      * @brief Processa um ficheiro de texto, conta a frequência das palavras e preenche o dicionário.
      */
-    void processFile(const std::string& filename, IDictionary<KeyType, size_t>& dictionary) {
+    void processFile(const std::string &filename, IDictionary<KeyType, size_t> &dictionary)
+    {
         std::ifstream file(filename);
-        if (!file.is_open()) {
+        if (!file.is_open())
+        {
             std::cerr << "Erro: Nao foi possivel abrir o ficheiro " << filename << std::endl;
             return;
         }
 
         std::string line;
-        while (std::getline(file, line)) {
+        while (std::getline(file, line))
+        {
             std::string processed_line;
             processed_line.reserve(line.length());
-            for (size_t i = 0; i < line.length(); ++i) {
+            for (size_t i = 0; i < line.length(); ++i)
+            {
                 // O travessão (em-dash) em UTF-8 é a sequência de 3 bytes: 0xE2, 0x80, 0x94
                 if (static_cast<unsigned char>(line[i]) == 0xE2 && i + 2 < line.length() &&
-                    static_cast<unsigned char>(line[i+1]) == 0x80 &&
-                    static_cast<unsigned char>(line[i+2]) == 0x94) {
-                    processed_line += ' '; 
-                    i += 2; 
-                } else {
+                    static_cast<unsigned char>(line[i + 1]) == 0x80 &&
+                    static_cast<unsigned char>(line[i + 2]) == 0x94)
+                {
+                    processed_line += ' ';
+                    i += 2;
+                }
+                else
+                {
                     processed_line += line[i];
                 }
             }
 
-            std::stringstream ss(processed_line);
-            std::string word;
-            while (ss >> word) {
-                std::string cleaned_word = clean_word(word);
-                if (cleaned_word.empty()) {
+            std::string token;
+            size_t i = 0;
+            while (i < processed_line.length())
+            {
+                unsigned char c = processed_line[i];
+
+                // Caractere UTF-8 (acentuado)
+                if (c == 0xc3 && i + 1 < processed_line.length())
+                {
+                    token += c;
+                    token += processed_line[i + 1];
+                    i += 2;
                     continue;
                 }
 
-                KeyType key(cleaned_word);
+                // ASCII válido para a palavra (letra, dígito ou hífen no meio)
+                if (std::isalpha(c) || std::isdigit(c) ||
+                    (c == '-' && !token.empty() && i + 1 < processed_line.length() && std::isalnum((unsigned char)processed_line[i + 1])))
+                {
+                    token += std::tolower(c);
+                }
+                else
+                {
+                    // Se bater um separador, processa a palavra atual
+                    if (!token.empty())
+                    {
+                        std::string cleaned = clean_word(token);
+                        if (!cleaned.empty())
+                        {
+                            KeyType key(cleaned);
+                            if (dictionary.contains(key))
+                            {
+                                const int &current_freq = dictionary.get(key);
+                                dictionary.add(key, current_freq + 1);
+                            }
+                            else
+                            {
+                                dictionary.add(key, 1);
+                            }
+                        }
+                        token.clear();
+                    }
+                }
 
-                if (dictionary.contains(key)) {
-                    const int& current_freq = dictionary.get(key);
-                    dictionary.add(key, current_freq + 1);
-                } else {
-                    dictionary.add(key, 1);
+                i++;
+            }
+
+            // Processa último token se houver
+            if (!token.empty())
+            {
+                std::string cleaned = clean_word(token);
+                if (!cleaned.empty())
+                {
+                    KeyType key(cleaned);
+                    if (dictionary.contains(key))
+                    {
+                        const int &current_freq = dictionary.get(key);
+                        dictionary.add(key, current_freq + 1);
+                    }
+                    else
+                    {
+                        dictionary.add(key, 1);
+                    }
                 }
             }
         }
