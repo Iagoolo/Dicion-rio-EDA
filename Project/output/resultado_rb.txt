@@ -1,0 +1,75 @@
+======================================================
+      RELATÓRIO DE DESEMPENHO DO DICIONÁRIO
+======================================================
+
+Estrutura de Dados Testada: rb
+Ficheiro de Entrada: input/teste.txt
+Palavras Únicas Encontradas: 52
+
+--- Métricas de Desempenho ---
++---------------------------+----------------------+
+| Métrica                  | Valor                |
++---------------------------+----------------------+
+| Tempo de Execução (s)   | 0.060700             |
+| Comparações Totais      | 897                  |
+| Rotações                | 33                   |
+| Trocas de Cor             | 119                  |
++---------------------------+----------------------+
+
+--- Frequência de Palavras (Ordenado Alfabeticamente) ---
++---------------------------+----------------------+
+| Palavra                   | Frequência          |
++---------------------------+----------------------+
+| adorava                   | 1                    |
+| amor                      | 1                    |
+| anti-horário             | 1                    |
+| até                      | 1                    |
+| avô                      | 1                    |
+| capítulo                 | 1                    |
+| chamada                   | 1                    |
+| ciência                  | 1                    |
+| clara                     | 3                    |
+| começo                   | 1                    |
+| conhecimento              | 1                    |
+| coragem                   | 1                    |
+| de                        | 1                    |
+| diferente                 | 1                    |
+| direção                 | 1                    |
+| distante                  | 1                    |
+| dizia                     | 1                    |
+| e                         | 2                    |
+| é                        | 2                    |
+| eficiente                 | 1                    |
+| ela                       | 2                    |
+| era                       | 1                    |
+| estrutura                 | 1                    |
+| fé                       | 1                    |
+| filosofia                 | 1                    |
+| forças                   | 1                    |
+| história                 | 1                    |
+| horário                  | 1                    |
+| i                         | 1                    |
+| jovem                     | 1                    |
+| ler                       | 1                    |
+| lia                       | 1                    |
+| livros                    | 1                    |
+| lugar                     | 1                    |
+| mais                      | 1                    |
+| mas                       | 1                    |
+| moinho                    | 2                    |
+| morava                    | 1                    |
+| no                        | 1                    |
+| num                       | 1                    |
+| o                         | 1                    |
+| open-hash-table           | 1                    |
+| poderosas                 | 1                    |
+| poesia                    | 1                    |
+| queria                    | 2                    |
+| são                      | 1                    |
+| seu                       | 1                    |
+| sobre                     | 1                    |
+| um                        | 1                    |
+| uma                       | 4                    |
+| velho                     | 1                    |
+| vez                       | 1                    |
++---------------------------+----------------------+
