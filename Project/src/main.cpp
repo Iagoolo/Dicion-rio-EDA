@@ -13,21 +13,26 @@
 #include "../include/RB-TREE/rb_tree.hpp"
 #include "../include/Chained_Hash/ChainedHashTable.hpp"
 #include "../include/Open_Hash/OpenAddressingHashTable.hpp"
-#include "../include/utils/outputWriter.hpp" // Inclui a nova classe
+#include "../include/utils/outputWriter.hpp"
 
 /**
- * @brief Função template que executa o ciclo completo de teste para uma estrutura de dados.
- * Cria a estrutura, processa o ficheiro, mede o tempo e gera o relatório de saída.
- * @tparam KeyType O tipo da chave a ser usada (std::string ou lexicalStr).
- * @param structure_type O nome da estrutura para o relatório.
- * @param filename O caminho do ficheiro de texto a ser processado.
+ * @brief Executa o processamento de um arquivo de entrada utilizando uma estrutura de dados especificada,
+ *        mede o tempo de execução e gera um relatório de saída.
+ *
+ * Esta função instancia dinamicamente uma estrutura de dicionário (AVL, Rubro-Negra, Hash Encadeado ou Hash Aberto)
+ * de acordo com o parâmetro 'structure_type'. Em seguida, processa o arquivo de entrada informado por 'filename',
+ * armazenando os dados na estrutura escolhida. O tempo de processamento é medido e, ao final, um relatório é gerado
+ * e salvo no arquivo especificado por 'output_filename'.
+ *
+ * @tparam KeyType Tipo da chave utilizada no dicionário.
+ * @param structure_type Tipo da estrutura de dados a ser utilizada ("avl", "rb", "chained_hash" ou "open_hash").
+ * @param filename Caminho para o arquivo de entrada a ser processado.
+ * @param output_filename Caminho para o arquivo onde o relatório será salvo.
  */
 template <typename KeyType>
-void run_and_generate_report(const std::string& structure_type, const std::string& filename) {
-    // Cria um ponteiro para a interface com o tipo de chave correto
+void run_and_generate_report(const std::string& structure_type, const std::string& filename, const std::string& output_filename) {
     std::unique_ptr<IDictionary<KeyType, size_t>> dictionary;
 
-    // Cria a instância correta da estrutura de dados
     if (structure_type == "avl") {
         dictionary = std::make_unique<AVL<KeyType, size_t>>();
     } else if (structure_type == "rb") {
@@ -41,50 +46,65 @@ void run_and_generate_report(const std::string& structure_type, const std::strin
         return;
     }
 
-    // Processa o ficheiro e mede o tempo
     ReadTxt<KeyType> processor;
+
     auto start = std::chrono::high_resolution_clock::now();
     processor.processFile(filename, *dictionary);
     auto end = std::chrono::high_resolution_clock::now();
     double duration_seconds = std::chrono::duration<double>(end - start).count();
 
-    // --- MUDANÇA PRINCIPAL: USO DO OUTPUTWRITER ---
-    
-    // 1. Define um nome de ficheiro de saída único para este teste.
-    std::string output_filename = "output/resultado_" + structure_type + ".txt";
-
-    // 2. Cria um objeto OutputWriter para esse ficheiro.
     OutputWriter<KeyType, size_t> writer(output_filename);
-
-    // 3. Chama o método para gerar o relatório completo.
     writer.write_report(structure_type, filename, duration_seconds, *dictionary);
 }
 
 int main(int argc, char* argv[]) {
     std::cout << "Bem-vindo ao Dicionário EDA!" << std::endl;
 
-    if (argc != 3) {
-        std::cerr << "Uso: " << argv[0] << " <tipo_estrutura> <caminho_arquivo>" << std::endl;
-        std::cerr << "Tipos de estrutura disponiveis: avl, rb, chained_hash, open_hash" << std::endl;
+    if ((argc != 3 && argc != 5) || (argc == 3 && argv[1] == std::string("--out"))) {
+        std::cerr << "Uso:\n"
+                  << "  " << argv[0] << " <tipo_estrutura> <caminho_arquivo> [--out <arquivo_saida>]\n"
+                  << "  " << argv[0] << " --all <caminho_arquivo>\n"
+                  << "Tipos disponíveis: avl, rb, chained_hash, open_hash\n";
         return 1;
     }
 
     std::string structure_type = argv[1];
     std::string filename = argv[2];
 
-    std::cout << "Processando '" << filename << "' com a estrutura '" << structure_type << "'..." << std::endl;
-
-    // Lógica para decidir qual tipo de chave usar (lexicalStr ou std::string)
-    if (structure_type == "avl" || structure_type == "rb") {
-        run_and_generate_report<lexicalStr>(structure_type, filename);
-    } else if (structure_type == "chained_hash" || structure_type == "open_hash") {
-        run_and_generate_report<std::string>(structure_type, filename);
+    if (structure_type == "--all") {
+        std::vector<std::string> structures = {"avl", "rb", "chained_hash", "open_hash"};
+        for (const auto& s : structures) {
+            std::string output_filename = "output/resultado_" + s + ".txt";
+            std::cout << "\n--> Processando com estrutura: " << s << std::endl;
+            if (s == "avl" || s == "rb") {
+                run_and_generate_report<lexicalStr>(s, filename, output_filename);
+            } else {
+                run_and_generate_report<std::string>(s, filename, output_filename);
+            }
+        }
     } else {
-        std::cerr << "Erro: Tipo de estrutura '" << structure_type << "' desconhecido." << std::endl;
-        return 1;
+        std::string output_filename = "output/resultado_" + structure_type + ".txt";
+        if (argc == 5) {
+            std::string opt = argv[3];
+            if (opt != "--out") {
+                std::cerr << "Erro: argumento opcional inválido. Use '--out <arquivo_saida>'" << std::endl;
+                return 1;
+            }
+            output_filename = argv[4];
+        }
+
+        std::cout << "Processando '" << filename << "' com a estrutura '" << structure_type << "'..." << std::endl;
+
+        if (structure_type == "avl" || structure_type == "rb") {
+            run_and_generate_report<lexicalStr>(structure_type, filename, output_filename);
+        } else if (structure_type == "chained_hash" || structure_type == "open_hash") {
+            run_and_generate_report<std::string>(structure_type, filename, output_filename);
+        } else {
+            std::cerr << "Erro: Tipo de estrutura '" << structure_type << "' desconhecido." << std::endl;
+            return 1;
+        }
     }
 
-    std::cout << "Processamento concluído." << std::endl;
-
+    std::cout << "Processamento concluído.\n";
     return 0;
 }
