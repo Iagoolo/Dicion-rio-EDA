@@ -57,6 +57,29 @@ void run_and_generate_report(const std::string& structure_type, const std::strin
     writer.write_report(structure_type, filename, duration_seconds, *dictionary);
 }
 
+/**
+ * @brief Função principal do programa Dicionário EDA.
+ *
+ * Esta função gerencia a execução do programa a partir dos argumentos fornecidos na linha de comando.
+ * Ela permite ao usuário escolher o tipo de estrutura de dados a ser utilizada para processar um arquivo de entrada,
+ * podendo também gerar relatórios de saída personalizados.
+ *
+ * Uso:
+ *   ./programa <tipo_estrutura> <caminho_arquivo> [--out <arquivo_saida>]
+ *   ./programa --all <caminho_arquivo>
+ *
+ * Tipos de estrutura disponíveis:
+ *   - avl
+ *   - rb
+ *   - chained_hash
+ *   - open_hash
+ *
+ * Parâmetros:
+ *   @param argc Número de argumentos da linha de comando.
+ *   @param argv Vetor de argumentos da linha de comando.
+ *
+ * @return int Código de status da execução (0 para sucesso, 1 para erro).
+ */
 int main(int argc, char* argv[]) {
     std::cout << "Bem-vindo ao Dicionário EDA!" << std::endl;
 

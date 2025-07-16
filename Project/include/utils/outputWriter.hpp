@@ -119,7 +119,7 @@ public:
     }
 
 private:
-    std::string m_output_file_path;
+    std::string m_output_file_path; // Caminho do ficheiro de saída
 };
 
 #endif

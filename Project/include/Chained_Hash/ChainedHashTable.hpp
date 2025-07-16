@@ -68,6 +68,18 @@ public:
     std::vector<Key> get_all_keys_sorted() const override;
 };
 
+/**
+ * @brief Retorna todas as chaves presentes na tabela hash encadeada, ordenadas.
+ *
+ * Este método percorre todos os slots da tabela hash encadeada, coletando todas as chaves armazenadas.
+ * Em seguida, tenta ordenar as chaves de acordo com a ordem lexicográfica da localidade "pt_BR.UTF-8".
+ * Caso a localidade não esteja disponível no sistema, uma mensagem de aviso é exibida e a ordenação padrão é utilizada.
+ *
+ * @tparam Key Tipo da chave armazenada na tabela.
+ * @tparam Value Tipo do valor associado à chave.
+ * @tparam Hash Functor de hash utilizado para calcular o índice das chaves.
+ * @return std::vector<Key> Vetor contendo todas as chaves presentes na tabela, ordenadas.
+ */
 template <typename Key, typename Value, typename Hash>
 std::vector<Key> ChainedHashTable<Key, Value, Hash>::get_all_keys_sorted() const {
     std::vector<Key> keys;

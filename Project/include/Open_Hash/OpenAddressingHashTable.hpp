@@ -101,6 +101,18 @@ public:
     long long get_rotations() const override; // Função que retorna o número de rotações, essa ED não possui
 };
 
+/**
+ * @brief Retorna todas as chaves presentes na tabela hash em ordem lexicográfica.
+ *
+ * Este método percorre todos os slots da tabela hash aberta e coleta as chaves dos slots ocupados.
+ * As chaves são então ordenadas de acordo com a ordem lexicográfica definida pela localidade "pt_BR.UTF-8".
+ * Caso a localidade não esteja disponível no sistema, uma mensagem de aviso é exibida e a ordenação padrão é utilizada.
+ *
+ * @return std::vector<Key> Vetor contendo todas as chaves presentes na tabela, ordenadas.
+ *
+ * @note Este método pressupõe que o tipo Key seja compatível com a ordenação lexicográfica e, 
+ *       caso utilize strings, que seja possível acessar os dados brutos via get().data() e get().size().
+ */
 template <typename Key, typename Value, typename Hash>
 std::vector<Key> OpenAddressingHashTable<Key, Value, Hash>::get_all_keys_sorted() const {
     std::vector<Key> keys;
