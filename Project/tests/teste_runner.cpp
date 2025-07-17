@@ -1,5 +1,3 @@
-// teste_runner.cpp (Versão Final Completa)
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,6 +8,7 @@
 #include <random>
 #include <map>
 #include <iomanip>
+#include <fstream>
 
 #include "../include/AVL/avl.hpp"
 #include "../include/RB-TREE/rb_tree.hpp"
@@ -90,18 +89,19 @@ void test_all_structures() {
     run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); return oht.get("key1") == 1; }, "Open Addressing Hash String Insert");
     run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); oht.add("key2", 2); oht.add("key3", 3); return oht.size() == 3; }, "Open Addressing Hash String Multiple Inserts");
     run_test([](){ OpenAddressingHashTable<std::string, int> oht(10); oht.add("key1", 1); oht.add("key2", 2); oht.remove("key1"); ASSERT_THROWS(oht.get("key1"), std::out_of_range); return oht.get("key2") == 2; }, "Open Addressing Hash String Remove");
-}
 
+}
 
 //==================================================================
 // ESTRUTURA DE BENCHMARK
 //==================================================================
 struct BenchmarkResults {
-    double insert_time_ms = 0;
-    double search_time_ms = 0;
-    double insert_comparisons = 0;
-    double search_comparisons = 0;
-    double structure_specific_metric = 0;
+    long long insert_time_ms = 0;
+    long long search_time_ms = 0;
+    long long insert_comparisons = 0;
+    long long search_comparisons = 0;
+    long long specifc_metrics = 0;
+    long long colors = 0;
 };
 
 BenchmarkResults benchmark_avl(const std::vector<std::string>& data) {
@@ -113,7 +113,7 @@ BenchmarkResults benchmark_avl(const std::vector<std::string>& data) {
     
     results.insert_time_ms = std::chrono::duration<double, std::milli>(end_insert - start_insert).count();
     results.insert_comparisons = avl.get_comparisons();
-    results.structure_specific_metric = avl.get_rotations();
+    results.specifc_metrics = avl.get_rotations();
     long long comparisons_before_search = avl.get_comparisons();
     
     auto start_search = std::chrono::high_resolution_clock::now();
@@ -136,7 +136,8 @@ BenchmarkResults benchmark_rb(const std::vector<std::string>& data) {
     
     results.insert_time_ms = std::chrono::duration<double, std::milli>(end_insert - start_insert).count();
     results.insert_comparisons = rb.get_comparisons();
-    results.structure_specific_metric = rb.get_rotations();
+    results.specifc_metrics = rb.get_rotations();
+    results.colors = rb.get_colors();
     long long comparisons_before_search = rb.get_comparisons();
     
     auto start_search = std::chrono::high_resolution_clock::now();
@@ -159,7 +160,7 @@ BenchmarkResults benchmark_chained_hash(const std::vector<std::string>& data) {
     
     results.insert_time_ms = std::chrono::duration<double, std::milli>(end_insert - start_insert).count();
     results.insert_comparisons = ht.get_comparisons();
-    results.structure_specific_metric = ht.get_collisions();
+    results.specifc_metrics = ht.get_collisions();
     long long comparisons_before_search = ht.get_comparisons();
     
     auto start_search = std::chrono::high_resolution_clock::now();
@@ -182,7 +183,7 @@ BenchmarkResults benchmark_open_hash(const std::vector<std::string>& data) {
     
     results.insert_time_ms = std::chrono::duration<double, std::milli>(end_insert - start_insert).count();
     results.insert_comparisons = oht.get_comparisons();
-    results.structure_specific_metric = oht.get_collisions();
+    results.specifc_metrics = oht.get_collisions();
     
     long long comparisons_before_search = oht.get_comparisons();
     auto start_search = std::chrono::high_resolution_clock::now();
@@ -205,7 +206,8 @@ void print_results_table(const std::map<std::string, BenchmarkResults>& all_resu
               << std::setw(25) << "Tempo Busca (ms)"
               << std::setw(25) << "Comparacoes (Insercao)"
               << std::setw(25) << "Comparacoes (Busca)"
-              << std::setw(20) << "Rotacoes/Colisoes" << std::endl;
+              << std::setw(20) << "Rotacoes/Colisoes"
+              << std::setw(20) << "Trocas de Cor" << std::endl;
     std::cout << std::string(145, '-') << std::endl;
 
     // Usando fixed e setprecision para formatar os doubles
@@ -217,7 +219,8 @@ void print_results_table(const std::map<std::string, BenchmarkResults>& all_resu
                   << std::setw(25) << pair.second.search_time_ms
                   << std::setw(25) << static_cast<long long>(pair.second.insert_comparisons)
                   << std::setw(25) << static_cast<long long>(pair.second.search_comparisons)
-                  << std::setw(20) << static_cast<long long>(pair.second.structure_specific_metric) << std::endl;
+                  << std::setw(20) << static_cast<long long>(pair.second.specifc_metrics) 
+                  << std::setw(20) << pair.second.colors <<std::endl;
     }
     std::cout << "===================================================================================================================\n";
 }
@@ -282,7 +285,8 @@ int main() {
             sum_result.search_time_ms += res.search_time_ms;
             sum_result.insert_comparisons += res.insert_comparisons;
             sum_result.search_comparisons += res.search_comparisons;
-            sum_result.structure_specific_metric += res.structure_specific_metric;
+            sum_result.specifc_metrics += res.specifc_metrics;
+            sum_result.colors += res.colors;
         }
         
         BenchmarkResults avg_result;
@@ -290,7 +294,8 @@ int main() {
         avg_result.search_time_ms = sum_result.search_time_ms / NUM_RUNS;
         avg_result.insert_comparisons = sum_result.insert_comparisons / NUM_RUNS;
         avg_result.search_comparisons = sum_result.search_comparisons / NUM_RUNS;
-        avg_result.structure_specific_metric = sum_result.structure_specific_metric / NUM_RUNS;
+        avg_result.specifc_metrics = sum_result.specifc_metrics / NUM_RUNS;
+        avg_result.colors = sum_result.colors / NUM_RUNS;
         
         final_averaged_results[name] = avg_result;
     }

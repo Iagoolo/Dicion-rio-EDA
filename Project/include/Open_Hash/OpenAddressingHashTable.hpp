@@ -126,20 +126,7 @@ std::vector<Key> OpenAddressingHashTable<Key, Value, Hash>::get_all_keys_sorted(
         }
     }
 
-    try {
-        std::locale loc("pt_BR.UTF-8");
-        const auto& collate = std::use_facet<std::collate<char>>(loc);
-
-        std::sort(keys.begin(), keys.end(), [&collate](const lexicalStr& a, const lexicalStr& b) {
-            return collate.compare(
-                a.get().data(), a.get().data() + a.get().size(),
-                b.get().data(), b.get().data() + b.get().size()
-            ) < 0;  
-        });
-    } catch (const std::runtime_error& e) {
-        std::cerr << "\nAVISO: Locale 'pt_BR.UTF-8' não encontrado. Ordenação padrão será usada.\n";
-        std::sort(keys.begin(), keys.end());
-    }   
+    std::sort(keys.begin(), keys.end());  
 
     return keys;
 }
