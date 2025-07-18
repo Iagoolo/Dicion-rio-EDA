@@ -10,7 +10,7 @@ Palavras Únicas Encontradas: 8
 +---------------------------+----------------------+
 | Métrica                  | Valor                |
 +---------------------------+----------------------+
-| Tempo de Execução (s)   | 0.000139             |
+| Tempo de Execução (s)   | 0.000270             |
 | Comparações Totais      | 89                   |
 | Rotações                | 5                    |
 | Trocas de Cor             | 14                   |
