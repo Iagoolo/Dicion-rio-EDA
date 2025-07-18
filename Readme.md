@@ -80,7 +80,7 @@ Execução com Saída Personalizada:
 ## Executa com a Tabela Hash e especifica o nome da saída
 
 ```bash
-./build/main chained_hash input/biblia.txt --out docs/analise_hash_biblia.txt
+./build/main chained_hash input/biblia.txt --out output/analise_hash_biblia.txt
 ```
 
 ### Observação
