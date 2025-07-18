@@ -84,6 +84,19 @@ public:
 
 //------------- Implementação --------------
 
+/** 
+* @brief Ordena as as chaves da árvore AVL em um vetor usando percurso in-ordem.
+
+* Esta função é chamada internamente por get_all_keys_sorted() para coletar as chaves
+* em ordem crescente, garantindo que o vetor resultante esteja ordenado.
+
+* @tparam Key Tipo da chave armazenada nos nós da árvore.
+* @tparam Value Tipo do valor associado à chave nos nós da árvore.
+* @param node Ponteiro para o nó atual da árvore/subárvore.
+* @param keys_vec Vetor onde as chaves serão armazenadas em ordem crescente.
+* @note Esta função é recursiva e utiliza a propriedade de percurso in-ordem
+*       para garantir que as chaves sejam adicionadas ao vetor na ordem correta.
+*/
 template <typename Key, typename Value>
 void AVL<Key, Value>::in_Order_vec(Nodeptr node, std::vector<Key>& keys_vec) const{
     if (!node) return;
@@ -93,6 +106,17 @@ void AVL<Key, Value>::in_Order_vec(Nodeptr node, std::vector<Key>& keys_vec) con
     in_Order_vec(node->right, keys_vec);
 }
 
+/**
+ * @brief Retorna um vetor com todas as chaves da árvore AVL em ordem crescente.
+ *
+ * Esta função percorre a árvore AVL e coleta todas as chaves em um vetor,
+ * utilizando o percurso in-ordem para garantir que as chaves sejam ordenadas.
+ * Se a árvore estiver vazia, retorna um vetor vazio.
+ *
+ * @tparam Key Tipo da chave armazenada nos nós da árvore.
+ * @tparam Value Tipo do valor associado à chave nos nós da árvore.
+ * @return std::vector<Key> Vetor contendo todas as chaves em ordem crescente.
+ */
 template <typename Key, typename Value>
 std::vector<Key> AVL<Key, Value>::get_all_keys_sorted() const {
     std::vector<Key> keys_vec;
