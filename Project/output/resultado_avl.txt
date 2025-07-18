@@ -1,0 +1,30 @@
+======================================================
+      RELATÓRIO DE DESEMPENHO DO DICIONÁRIO
+======================================================
+
+Estrutura de Dados Testada: avl
+Ficheiro de Entrada: input/sla.txt
+Palavras Únicas Encontradas: 8
+
+--- Métricas de Desempenho ---
++---------------------------+----------------------+
+| Métrica                  | Valor                |
++---------------------------+----------------------+
+| Tempo de Execução (s)   | 0.000148             |
+| Comparações Totais      | 89                   |
+| Rotações                | 8                    |
++---------------------------+----------------------+
+
+--- Frequência de Palavras (Ordenado Alfabeticamente) ---
++---------------------------+----------------------+
+| Palavra                   | Frequência          |
++---------------------------+----------------------+
+| a                         | 1                    |
+| á                        | 2                    |
+| ã                        | 3                    |
+| edeudneud                 | 1                    |
+| ejde                      | 1                    |
+| fé                       | 1                    |
+| soskwo                    | 1                    |
+| uejdiejde                 | 1                    |
++---------------------------+----------------------+

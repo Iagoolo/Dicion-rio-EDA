@@ -84,6 +84,16 @@ template <typename Key, typename Value, typename Hash>
 std::vector<Key> ChainedHashTable<Key, Value, Hash>::get_all_keys_sorted() const {
     std::vector<Key> keys;
 
+    if (this->isEmpty()) return keys;
+
+    keys.reserve(this->size());
+
+    for (const auto& bucket : m_table) {
+        for (const auto& pair : bucket) {
+            keys.push_back(pair.first);
+        }
+    }
+
     std::sort(keys.begin(), keys.end());
     
     return keys;

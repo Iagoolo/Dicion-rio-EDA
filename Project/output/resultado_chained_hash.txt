@@ -1,0 +1,30 @@
+======================================================
+      RELATÓRIO DE DESEMPENHO DO DICIONÁRIO
+======================================================
+
+Estrutura de Dados Testada: chained_hash
+Ficheiro de Entrada: input/sla.txt
+Palavras Únicas Encontradas: 8
+
+--- Métricas de Desempenho ---
++---------------------------+----------------------+
+| Métrica                  | Valor                |
++---------------------------+----------------------+
+| Tempo de Execução (s)   | 0.000075             |
+| Comparações Totais      | 11                   |
+| Colisões                 | 1                    |
++---------------------------+----------------------+
+
+--- Frequência de Palavras (Ordenado Alfabeticamente) ---
++---------------------------+----------------------+
+| Palavra                   | Frequência          |
++---------------------------+----------------------+
+| a                         | 1                    |
+| edeudneud                 | 1                    |
+| ejde                      | 1                    |
+| fé                       | 1                    |
+| soskwo                    | 1                    |
+| uejdiejde                 | 1                    |
+| á                        | 2                    |
+| ã                        | 3                    |
++---------------------------+----------------------+
