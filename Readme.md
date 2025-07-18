@@ -40,11 +40,11 @@ As estruturas implementadas são:
 
 ```
 
-## ⚙️ Como Compilar e Executar
+## Como Compilar e Executar
 
 Este projeto utiliza um Makefile para automatizar a compilação e execução. Os comandos principais são executados a partir do terminal na raiz do projeto.
 
-### ▶️ Executando a Aplicação Principal
+### Executando a Aplicação Principal
 
 Para compilar e executar o programa de análise de frequência de palavras, utilize o make e depois execute o binário build/main, fornecendo os argumentos necessários.
 
@@ -64,6 +64,8 @@ Sintaxe de Execução:
 ```bash
 make
 ```
+
+Aviso: a compilação pode demorar em média 7 segundos.
 
 ## Executa com a Árvore AVL
 
@@ -85,7 +87,7 @@ Execução com Saída Personalizada:
 
 Você pode usar todas as estruturas de uma vez para um mesmo arquivo .txt. Para isso, use --all no lugar do <tipo_estrutura>
 
-## 🧪 Rodando os Testes
+## Rodando os Testes
 
 Para compilar e executar a suíte de testes de correção e o benchmark de desempenho (que não gera ficheiros, apenas imprime na tela):
 
@@ -93,9 +95,17 @@ Para compilar e executar a suíte de testes de correção e o benchmark de desem
 make test
 ```
 
-## 🧹 Limpando os Arquivos
+## Limpando os Arquivos
 
 Para remover o diretório build e todos os arquivos compilados:
+
+```bash
+make clean
+```
+
+## Deu erro?
+
+Apague os arquivos que estão na pasta build com o seguinte comando:
 
 ```bash
 make clean
